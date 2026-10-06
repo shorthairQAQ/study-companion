@@ -30,29 +30,8 @@ body{
   position:fixed;inset:0;
   overflow:hidden;
   transition:filter .3s;
-  /* 常驻底图：任何时刻都有画面，杜绝加载期黑屏与过渡暗谷 */
+  /* 常驻底图，任何时刻都有画面（加载期兜底） */
   background:url('bg.jpg') center 38%/cover no-repeat;
-}
-/* 伪动画：帧轮流淡入淡出，人物动、背景不动 */
-.frame{
-  position:absolute;inset:0;
-  background-size:cover;
-  background-position:center 38%;
-  background-repeat:no-repeat;
-  opacity:0;
-  will-change:opacity;
-}
-.f1{background-image:url('frames/frame-2.jpg');animation:frameFade 9s linear infinite}
-.f2{background-image:url('frames/frame-3.jpg');animation:frameFade 9s linear infinite 1.8s}
-.f3{background-image:url('frames/frame-5.jpg');animation:frameFade 9s linear infinite 3.6s}
-.f4{background-image:url('frames/frame-4.jpg');animation:frameFade 9s linear infinite 5.4s}
-.f5{background-image:url('frames/frame-1.jpg');animation:frameFade 9s linear infinite 7.2s}
-@keyframes frameFade{
-  0%{opacity:0}
-  5%{opacity:1}
-  20%{opacity:1}
-  25%{opacity:0}
-  100%{opacity:0}
 }
 .scene::after{
   content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
@@ -352,13 +331,7 @@ body{
 <body>
 
 <!-- ============ 场景 ============ -->
-<div class="scene" id="scene">
-  <div class="frame f1"></div>
-  <div class="frame f2"></div>
-  <div class="frame f3"></div>
-  <div class="frame f4"></div>
-  <div class="frame f5"></div>
-</div>
+<div class="scene" id="scene"></div>
 
 <!-- 人物热区 -->
 <div class="hotspot" id="hotspot">
@@ -1027,6 +1000,56 @@ if (demo === 'setting') setTimeout(openSettings, 400);
 if (demo === 'pomo')    setTimeout(openPomo, 400);
 if (demo === 'vault')   setTimeout(openVault, 400);
 if (demo === 'review')  setTimeout(() => { startReview(); }, 400);
+
+/* ================= 场景帧动画（JS 驱动：随机 3~10 秒切换 + 眨眼） ================= */
+const SCENE_FRAMES = [
+  { img: 'frames/frame-1.jpg' },   // 思考
+  { img: 'frames/frame-2.jpg' },   // 写字
+  { img: 'frames/frame-3.jpg' },   // 写字
+  { img: 'frames/frame-5.jpg' },   // 思考
+  { img: 'frames/frame-12.jpg' }   // 睁眼微笑（眨眼对）
+];
+const BLINK_CLOSED = 'frames/frame-4.jpg';   // 闭眼（眨眼用）
+
+// 预加载所有帧，避免切换时闪底图
+SCENE_FRAMES.forEach(f => { const im = new Image(); im.src = f.img; });
+(new Image()).src = BLINK_CLOSED;
+
+let curFrame = null, frameTimer = null, blinkTimer = null;
+
+function setSceneImg(img) {
+  scene.style.backgroundImage = 'url("' + img + '")';
+}
+
+function pickNext() {
+  let i;
+  do {
+    i = Math.floor(Math.random() * SCENE_FRAMES.length);
+  } while (curFrame && SCENE_FRAMES[i].img === curFrame.img && SCENE_FRAMES.length > 1);
+  return SCENE_FRAMES[i];
+}
+
+function advanceFrame() {
+  const f = pickNext();
+  curFrame = f;
+  setSceneImg(f.img);
+  frameTimer = setTimeout(advanceFrame, 3000 + Math.random() * 7000);   // 3~10 秒随机
+  // 轮到睁眼微笑(12)时，随机眨眼一次
+  if (f.img.indexOf('frame-12') >= 0 && Math.random() < 0.6) {
+    blinkTimer = setTimeout(doBlink, 900 + Math.random() * 1800);
+  }
+}
+
+function doBlink() {
+  setSceneImg(BLINK_CLOSED);                       // 闭眼
+  setTimeout(() => { if (curFrame) setSceneImg(curFrame.img); }, 350);  // ≤0.5s 睁回
+}
+
+// 启动
+curFrame = SCENE_FRAMES[Math.floor(Math.random() * SCENE_FRAMES.length)];
+setSceneImg(curFrame.img);
+frameTimer = setTimeout(advanceFrame, 3000 + Math.random() * 7000);
+
 </script>
 </body>
 </html>
