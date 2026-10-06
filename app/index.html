@@ -28,11 +28,31 @@ body{
 /* ============ 场景层 ============ */
 .scene{
   position:fixed;inset:0;
-  background:url('bg.jpg') center 38%/cover no-repeat;
+  overflow:hidden;
   transition:filter .3s;
 }
+/* 伪动画：5 帧轮流淡入淡出，人物动、背景不动 */
+.frame{
+  position:absolute;inset:0;
+  background-size:cover;
+  background-position:center 38%;
+  background-repeat:no-repeat;
+  opacity:0;
+}
+.f1{background-image:url('frames/frame-2.jpg');animation:frameFade 9s infinite}
+.f2{background-image:url('frames/frame-3.jpg');animation:frameFade 9s infinite 1.8s}
+.f3{background-image:url('frames/frame-5.jpg');animation:frameFade 9s infinite 3.6s}
+.f4{background-image:url('frames/frame-4.jpg');animation:frameFade 9s infinite 5.4s}
+.f5{background-image:url('frames/frame-1.jpg');animation:frameFade 9s infinite 7.2s}
+@keyframes frameFade{
+  0%{opacity:0}
+  5%{opacity:1}
+  20%{opacity:1}
+  25%{opacity:0}
+  100%{opacity:0}
+}
 .scene::after{
-  content:'';position:absolute;inset:0;pointer-events:none;
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
   background:radial-gradient(ellipse at 50% 45%,transparent 35%,rgba(10,6,4,.55) 100%);
 }
 .scene.dim{filter:brightness(.62) saturate(.9)}
@@ -329,7 +349,13 @@ body{
 <body>
 
 <!-- ============ 场景 ============ -->
-<div class="scene" id="scene"></div>
+<div class="scene" id="scene">
+  <div class="frame f1"></div>
+  <div class="frame f2"></div>
+  <div class="frame f3"></div>
+  <div class="frame f4"></div>
+  <div class="frame f5"></div>
+</div>
 
 <!-- 人物热区 -->
 <div class="hotspot" id="hotspot">
