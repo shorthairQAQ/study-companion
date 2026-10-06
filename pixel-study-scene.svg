@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="960" height="540" shape-rendering="crispEdges">
+  <!-- ============ 背景墙 ============ -->
+  <rect width="320" height="180" fill="#2e2436"/>
+  <!-- 地板 -->
+  <rect y="146" width="320" height="34" fill="#241c2c"/>
+  <rect y="146" width="320" height="2" fill="#3a2e3c"/>
+
+  <!-- ============ 窗户（左） ============ -->
+  <rect x="16" y="18" width="90" height="78" fill="#6a5a7a"/>
+  <rect x="20" y="22" width="82" height="70" fill="#171a38"/>
+  <!-- 夜空星星 -->
+  <rect x="30" y="30" width="2" height="2" fill="#f0e6c8"/>
+  <rect x="46" y="40" width="2" height="2" fill="#f0e6c8"/>
+  <rect x="38" y="58" width="2" height="2" fill="#f0e6c8"/>
+  <rect x="64" y="34" width="2" height="2" fill="#f0e6c8"/>
+  <rect x="72" y="62" width="2" height="2" fill="#f0e6c8"/>
+  <rect x="26" y="70" width="2" height="2" fill="#f0e6c8"/>
+  <!-- 月亮 -->
+  <rect x="80" y="30" width="10" height="10" fill="#f5d78a"/>
+  <rect x="84" y="30" width="6" height="10" fill="#fbe8b0"/>
+  <!-- 窗格 -->
+  <rect x="58" y="22" width="4" height="70" fill="#6a5a7a"/>
+  <rect x="20" y="52" width="82" height="4" fill="#6a5a7a"/>
+  <!-- 窗台 -->
+  <rect x="14" y="96" width="94" height="4" fill="#4a3a5a"/>
+
+  <!-- ============ 书架（右） ============ -->
+  <rect x="230" y="10" width="78" height="136" fill="#3a2a1e"/>
+  <rect x="230" y="10" width="78" height="4" fill="#5a4436"/>
+  <!-- 隔板 -->
+  <rect x="230" y="52" width="78" height="4" fill="#5a4436"/>
+  <rect x="230" y="94" width="78" height="4" fill="#5a4436"/>
+  <!-- 第一层书 -->
+  <rect x="236" y="26" width="6" height="26" fill="#c85a4a"/>
+  <rect x="244" y="30" width="5" height="22" fill="#4a8a6a"/>
+  <rect x="251" y="24" width="7" height="28" fill="#4a6aa8"/>
+  <rect x="260" y="28" width="5" height="24" fill="#d4a04a"/>
+  <rect x="267" y="32" width="6" height="20" fill="#8a5a8a"/>
+  <rect x="275" y="26" width="5" height="26" fill="#5a8a8a"/>
+  <!-- 第二层书 -->
+  <rect x="236" y="68" width="5" height="26" fill="#d4a04a"/>
+  <rect x="243" y="72" width="7" height="22" fill="#c85a4a"/>
+  <rect x="252" y="66" width="5" height="28" fill="#4a8a6a"/>
+  <rect x="259" y="70" width="6" height="24" fill="#8a5a8a"/>
+  <rect x="267" y="74" width="5" height="20" fill="#4a6aa8"/>
+  <!-- 第三层 -->
+  <rect x="236" y="112" width="7" height="34" fill="#4a6aa8"/>
+  <rect x="245" y="116" width="5" height="30" fill="#d4a04a"/>
+  <rect x="252" y="110" width="6" height="36" fill="#c85a4a"/>
+
+  <!-- ============ 墙上画框 ============ -->
+  <rect x="130" y="30" width="34" height="26" fill="#5a4436"/>
+  <rect x="133" y="33" width="28" height="20" fill="#7a6a5a"/>
+  <rect x="137" y="40" width="20" height="8" fill="#c08850"/>
+
+  <!-- ============ 人物（在桌子后面） ============ -->
+  <!-- 身体 / 肩 -->
+  <rect x="150" y="104" width="50" height="28" fill="#6a8ac0"/>
+  <rect x="150" y="104" width="50" height="4" fill="#7a9ad0"/>
+  <!-- 脖子 -->
+  <rect x="168" y="98" width="14" height="8" fill="#e8c4a0"/>
+  <!-- 头 -->
+  <rect x="158" y="72" width="34" height="28" fill="#f0d0b0"/>
+  <!-- 两侧头发 -->
+  <rect x="154" y="76" width="6" height="26" fill="#3a2a3a"/>
+  <rect x="190" y="76" width="6" height="26" fill="#3a2a3a"/>
+  <!-- 刘海 -->
+  <rect x="156" y="70" width="38" height="10" fill="#3a2a3a"/>
+  <!-- 帽子 -->
+  <rect x="154" y="58" width="42" height="12" fill="#3a6ab8"/>
+  <rect x="150" y="68" width="50" height="5" fill="#2a4a8a"/>
+  <rect x="188" y="60" width="8" height="6" fill="#4a7ac8"/>
+  <!-- 眼睛 -->
+  <rect x="166" y="84" width="4" height="4" fill="#2a2230"/>
+  <rect x="180" y="84" width="4" height="4" fill="#2a2230"/>
+  <!-- 腮红 -->
+  <rect x="162" y="90" width="4" height="3" fill="#e8a898"/>
+  <rect x="184" y="90" width="4" height="3" fill="#e8a898"/>
+  <!-- 手臂 -->
+  <rect x="138" y="106" width="14" height="18" fill="#f0d0b0"/>
+  <rect x="198" y="106" width="14" height="18" fill="#f0d0b0"/>
+
+  <!-- ============ 书桌 ============ -->
+  <rect x="46" y="122" width="222" height="10" fill="#a06a3a"/>
+  <rect x="46" y="122" width="222" height="3" fill="#c08850"/>
+  <rect x="54" y="132" width="206" height="14" fill="#6a4528"/>
+  <rect x="54" y="132" width="206" height="2" fill="#8a5a38"/>
+
+  <!-- ============ 桌上物品 ============ -->
+  <!-- 打开的书 / 笔记本 -->
+  <rect x="122" y="114" width="30" height="8" fill="#e8e0d0"/>
+  <rect x="122" y="114" width="15" height="8" fill="#f8f4e8"/>
+  <rect x="136" y="114" width="2" height="8" fill="#b8a890"/>
+  <!-- 笔 -->
+  <rect x="152" y="110" width="16" height="2" fill="#c85a4a"/>
+  <!-- 水杯 -->
+  <rect x="212" y="110" width="10" height="12" fill="#8ab8d0"/>
+  <rect x="212" y="112" width="10" height="4" fill="#6a98b0"/>
+
+  <!-- ============ 台灯 ============ -->
+  <!-- 光晕 -->
+  <circle cx="86" cy="108" r="48" fill="#ffd88a" opacity="0.13"/>
+  <!-- 底座 -->
+  <rect x="78" y="120" width="20" height="3" fill="#8a7a5a"/>
+  <!-- 灯柱 -->
+  <rect x="86" y="98" width="4" height="22" fill="#8a7a5a"/>
+  <!-- 灯罩 -->
+  <rect x="74" y="90" width="28" height="9" fill="#d4a055"/>
+  <rect x="74" y="90" width="28" height="3" fill="#e8b878"/>
+  <!-- 灯光 -->
+  <rect x="78" y="99" width="20" height="4" fill="#ffe8a8" opacity="0.85"/>
+
+  <!-- ============ 整体暖色叠加 ============ -->
+  <rect width="320" height="180" fill="#ff9a3a" opacity="0.06"/>
+  <!-- 顶部稍暗，突出灯光 -->
+  <rect width="320" height="40" fill="#1a1420" opacity="0.18"/>
+</svg>
