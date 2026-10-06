@@ -39,6 +39,16 @@ body{
 }
 .scene.dim{filter:brightness(.62) saturate(.9)}
 
+/* 场景帧图层：所有帧常驻 DOM，只切 opacity，不再替换 background-image */
+.scene-layer{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:center 38%;
+  opacity:0;transition:opacity .38s ease;
+  pointer-events:none;
+}
+.scene-layer.show{opacity:1}
+
 /* 人物热区 */
 .hotspot{
   position:fixed;left:50%;top:47%;width:26%;height:46%;
@@ -1001,7 +1011,12 @@ if (demo === 'pomo')    setTimeout(openPomo, 400);
 if (demo === 'vault')   setTimeout(openVault, 400);
 if (demo === 'review')  setTimeout(() => { startReview(); }, 400);
 
-/* ================= 场景帧动画（JS 驱动：随机 3~10 秒切换 + 眨眼） ================= */
+/* ================= 场景帧动画（JS 驱动：随机 3~10 秒切换 + 眨眼） =================
+   防闪黑：每个帧预先渲染成常驻 DOM 的 <img> 图层，src 只设一次、之后永不改动，
+   切换只改 opacity —— 不再有「旧图先卸载、新图还没解码」的空白帧。
+   切姿态：新层先淡入，盖满之后才隐藏旧层；眨眼：闭眼层临时盖在姿态层之上，
+   姿态层全程保持不透明。所以任何时刻画面上都至少有一层完整画面。
+   ------------------------------------------------------------------------------ */
 const SCENE_FRAMES = [
   { img: 'frames/frame-1.jpg' },   // 思考
   { img: 'frames/frame-2.jpg' },   // 写字
@@ -1011,14 +1026,28 @@ const SCENE_FRAMES = [
 ];
 const BLINK_CLOSED = 'frames/frame-4.jpg';   // 闭眼（眨眼用）
 
-// 预加载所有帧，避免切换时闪底图
-SCENE_FRAMES.forEach(f => { const im = new Image(); im.src = f.img; });
-(new Image()).src = BLINK_CLOSED;
+// 每个帧一个常驻图层；图片只在建层时请求一次，之后靠 opacity 显隐
+const layers = {};
+function makeLayer(src) {
+  const im = document.createElement('img');
+  im.className = 'scene-layer';
+  im.alt = '';
+  im.decoding = 'async';
+  im.draggable = false;
+  im.src = src;
+  scene.appendChild(im);
+  return im;
+}
+SCENE_FRAMES.forEach(f => { layers[f.img] = makeLayer(f.img); });
+const blinkLayer = layers[BLINK_CLOSED] || makeLayer(BLINK_CLOSED);
 
 let curFrame = null, frameTimer = null, blinkTimer = null;
 
-function setSceneImg(img) {
-  scene.style.backgroundImage = 'url("' + img + '")';
+/* 把一层提到最上层并淡入；不改它的 src，图片永远不会被重新加载/卸载 */
+function fadeIn(el, duration) {
+  if (el !== scene.lastElementChild) scene.appendChild(el);   // 排到最后 = 绘制在最上层
+  el.style.transitionDuration = duration;
+  el.classList.add('show');
 }
 
 function pickNext() {
@@ -1031,8 +1060,15 @@ function pickNext() {
 
 function advanceFrame() {
   const f = pickNext();
+  const prev = curFrame;
   curFrame = f;
-  setSceneImg(f.img);
+  fadeIn(layers[f.img], '.38s');
+  // 新层盖满之后，再隐掉旧姿态层（旧层一直不透明到新层完全显现，故不会闪黑）
+  if (prev && prev !== f) {
+    setTimeout(() => {
+      if (curFrame !== prev) layers[prev.img].classList.remove('show');
+    }, 420);
+  }
   frameTimer = setTimeout(advanceFrame, 3000 + Math.random() * 7000);   // 3~10 秒随机
   // 轮到睁眼微笑(12)时，随机眨眼一次
   if (f.img.indexOf('frame-12') >= 0 && Math.random() < 0.6) {
@@ -1041,13 +1077,19 @@ function advanceFrame() {
 }
 
 function doBlink() {
-  setSceneImg(BLINK_CLOSED);                       // 闭眼
-  setTimeout(() => { if (curFrame) setSceneImg(curFrame.img); }, 350);  // ≤0.5s 睁回
+  const back = curFrame;                        // 记住要睁回的那一帧，绝不跨切到别的姿态
+  if (!back) return;
+  const backEl = layers[back.img];
+  fadeIn(blinkLayer, '.12s');                   // 闭眼：盖上，底层姿态层保持不透明
+  setTimeout(() => {                            // 眨眼持续 350ms
+    blinkLayer.classList.remove('show');        // 快速淡出，露出下面原本的姿态层
+    if (backEl) backEl.classList.add('show');   // 眨眼期间若已切姿态，新姿态层在上层，不会被覆盖回旧帧
+  }, 350);
 }
 
 // 启动
 curFrame = SCENE_FRAMES[Math.floor(Math.random() * SCENE_FRAMES.length)];
-setSceneImg(curFrame.img);
+fadeIn(layers[curFrame.img], '.38s');
 frameTimer = setTimeout(advanceFrame, 3000 + Math.random() * 7000);
 
 </script>
