@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>伴学 · AI 学习空间</title>
+<style>
+:root{
+  --ink:#1a1410;
+  --panel:rgba(36,26,22,.90);
+  --panel-2:rgba(48,35,29,.95);
+  --line:#7a5c44;
+  --line-2:#a88460;
+  --cream:#f6e8d2;
+  --cream-dim:#c9b39a;
+  --amber:#ffc861;
+  --amber-dim:#c9973f;
+  --ok:#8fbf6a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;
+  background:#120e0b;color:var(--cream);
+  overflow:hidden;user-select:none;
+}
+
+/* ============ 场景层 ============ */
+.scene{
+  position:fixed;inset:0;
+  background:url('bg.jpg') center 38%/cover no-repeat;
+  transition:filter .3s;
+}
+.scene::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%,transparent 35%,rgba(10,6,4,.55) 100%);
+}
+.scene.dim{filter:brightness(.62) saturate(.9)}
+
+/* 人物热区 */
+.hotspot{
+  position:fixed;left:50%;top:47%;width:26%;height:46%;
+  transform:translate(-50%,-50%);
+  border-radius:12px;cursor:pointer;
+  transition:background .2s;
+  display:flex;align-items:flex-start;justify-content:center;
+}
+.hotspot:hover{background:rgba(255,200,97,.07)}
+.hotspot .hint{
+  margin-top:6px;padding:5px 12px;
+  background:var(--panel);border:2px solid var(--line-2);
+  color:var(--amber);font-size:13px;letter-spacing:2px;
+  opacity:0;transform:translateY(-6px);transition:all .22s;
+  pointer-events:none;box-shadow:3px 3px 0 rgba(0,0,0,.45);
+}
+.hotspot:hover .hint{opacity:1;transform:translateY(0)}
+.hotspot.hidden{opacity:0;pointer-events:none}
+
+/* ============ 辐射菜单 ============ */
+.radial{
+  position:fixed;left:50%;top:47%;
+  width:0;height:0;pointer-events:none;z-index:40;
+}
+.radial.open{pointer-events:auto}
+.radial-item{
+  position:absolute;left:0;top:0;
+  width:104px;height:56px;
+  margin:-28px 0 0 -52px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:var(--panel-2);
+  border:2px solid var(--line-2);
+  color:var(--cream);
+  font-size:12px;letter-spacing:1px;cursor:pointer;
+  box-shadow:4px 4px 0 rgba(0,0,0,.5);
+  opacity:0;transform:scale(.3);pointer-events:auto;
+  transition:transform .34s cubic-bezier(.34,1.56,.64,1),opacity .22s,background .15s,border-color .15s;
+}
+.radial-item .ic{font-size:17px;line-height:1}
+.radial.open .radial-item{opacity:1}
+.radial-item:hover{background:#5a3f2e;border-color:var(--amber);color:var(--amber)}
+.radial-item:active{transform:var(--tf) scale(.94)!important}
+
+/* 展开位置：6 个方向 */
+.radial.open .ri-1{--tf:translate(-50%,-50%) rotate(-90deg) translateY(-168px) rotate(90deg);transform:var(--tf)}
+.radial.open .ri-2{--tf:translate(-50%,-50%) rotate(-30deg) translateY(-168px) rotate(30deg);transform:var(--tf)}
+.radial.open .ri-3{--tf:translate(-50%,-50%) rotate(30deg) translateY(-168px) rotate(-30deg);transform:var(--tf)}
+.radial.open .ri-4{--tf:translate(-50%,-50%) rotate(90deg) translateY(-152px) rotate(-90deg);transform:var(--tf)}
+.radial.open .ri-5{--tf:translate(-50%,-50%) rotate(150deg) translateY(-168px) rotate(-150deg);transform:var(--tf)}
+.radial.open .ri-6{--tf:translate(-50%,-50%) rotate(210deg) translateY(-168px) rotate(-210deg);transform:var(--tf)}
+@media (max-height: 700px){
+  .radial.open .ri-1{--tf:translate(-50%,-50%) rotate(-90deg) translateY(-132px) rotate(90deg)}
+  .radial.open .ri-2{--tf:translate(-50%,-50%) rotate(-30deg) translateY(-132px) rotate(30deg)}
+  .radial.open .ri-3{--tf:translate(-50%,-50%) rotate(30deg) translateY(-132px) rotate(-30deg)}
+  .radial.open .ri-4{--tf:translate(-50%,-50%) rotate(90deg) translateY(-120px) rotate(-90deg)}
+  .radial.open .ri-5{--tf:translate(-50%,-50%) rotate(150deg) translateY(-132px) rotate(-150deg)}
+  .radial.open .ri-6{--tf:translate(-50%,-50%) rotate(210deg) translateY(-132px) rotate(-210deg)}
+}
+
+/* ============ 右上角工具栏 ============ */
+.topbar{position:fixed;right:22px;top:22px;z-index:35;display:flex;gap:9px}
+.topbar .icon-btn{
+  width:46px;height:46px;font-size:20px;
+  background:var(--panel);border:2px solid var(--line);
+  box-shadow:3px 3px 0 rgba(0,0,0,.45);
+}
+.topbar .icon-btn:hover{background:#5a3f2e;border-color:var(--amber);color:var(--amber)}
+
+/* ============ To-Do 面板 ============ */
+.todo{
+  position:fixed;left:22px;top:22px;width:268px;z-index:30;
+  background:var(--panel);border:3px solid var(--line);
+  box-shadow:6px 6px 0 rgba(0,0,0,.45);
+}
+.todo-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-bottom:2px solid var(--line);
+  font-size:13px;letter-spacing:2px;color:var(--amber);
+}
+.todo-hd .cnt{font-size:11px;color:var(--cream-dim);letter-spacing:0}
+.todo-body{max-height:260px;overflow-y:auto}
+.todo-empty{padding:14px 12px;font-size:12px;color:var(--cream-dim);text-align:center}
+.todo-item{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:8px 12px;font-size:13px;line-height:1.4;
+  border-bottom:1px solid rgba(122,92,68,.35);
+}
+.todo-item:hover{background:rgba(255,200,97,.06)}
+.todo-item .box{
+  flex:0 0 15px;width:15px;height:15px;margin-top:2px;
+  border:2px solid var(--line-2);background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--ink);
+}
+.todo-item.done .box{background:var(--ok);border-color:var(--ok)}
+.todo-item.done .box::after{content:'✓'}
+.todo-item.done .txt{text-decoration:line-through;color:var(--cream-dim)}
+.todo-item .txt{flex:1;word-break:break-word}
+.todo-item .del{
+  opacity:0;cursor:pointer;color:var(--cream-dim);font-size:14px;line-height:1;
+  padding:0 2px;transition:opacity .15s,color .15s;
+}
+.todo-item:hover .del{opacity:1}
+.todo-item .del:hover{color:#e07a5f}
+.todo-add{display:flex;border-top:2px solid var(--line)}
+.todo-add input{
+  flex:1;background:transparent;border:none;outline:none;
+  padding:10px 12px;color:var(--cream);font-size:13px;
+  font-family:inherit;
+}
+.todo-add input::placeholder{color:#8a7562}
+.todo-add button{
+  background:transparent;border:none;border-left:2px solid var(--line);
+  color:var(--amber);padding:0 14px;cursor:pointer;font-size:16px;
+  font-family:inherit;transition:background .15s;
+}
+.todo-add button:hover{background:rgba(255,200,97,.12)}
+
+/* ============ 右侧栏 ============ */
+.sidebar{
+  position:fixed;right:0;top:0;bottom:0;width:390px;z-index:50;
+  background:var(--panel-2);border-left:3px solid var(--line);
+  display:flex;flex-direction:column;
+  transform:translateX(102%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+  box-shadow:-8px 0 24px rgba(0,0,0,.5);
+}
+.sidebar.open{transform:translateX(0)}
+.sb-hd{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 14px;border-bottom:2px solid var(--line);
+}
+.sb-hd .title{flex:1;font-size:14px;letter-spacing:2px;color:var(--amber)}
+.icon-btn{
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  background:transparent;border:2px solid var(--line);color:var(--cream);
+  cursor:pointer;font-size:14px;font-family:inherit;transition:all .15s;
+}
+.icon-btn:hover{border-color:var(--amber);color:var(--amber);background:rgba(255,200,97,.1)}
+.sb-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:86%;padding:10px 12px;font-size:13px;line-height:1.65;word-break:break-word}
+.msg.ai{align-self:flex-start;background:rgba(255,200,97,.10);border:2px solid var(--line);border-left:3px solid var(--amber)}
+.msg.me{align-self:flex-end;background:rgba(120,90,60,.55);border:2px solid var(--line)}
+.msg.sys{align-self:center;font-size:12px;color:var(--cream-dim);background:none;border:1px dashed var(--line);padding:6px 10px;text-align:center}
+.sb-foot{border-top:2px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:8px}
+.sb-foot textarea{
+  width:100%;height:64px;resize:none;background:rgba(20,14,11,.6);
+  border:2px solid var(--line);color:var(--cream);padding:9px 10px;
+  font-size:13px;font-family:inherit;outline:none;line-height:1.5;
+}
+.sb-foot textarea:focus{border-color:var(--amber-dim)}
+.sb-foot .row{display:flex;gap:8px;align-items:center}
+.sb-foot .row .tip{flex:1;font-size:11px;color:var(--cream-dim)}
+.btn{
+  padding:8px 16px;background:var(--amber-dim);border:2px solid var(--amber);
+  color:#2a1c10;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;
+  letter-spacing:1px;transition:all .15s;box-shadow:3px 3px 0 rgba(0,0,0,.4);
+}
+.btn:hover{background:var(--amber)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* 侧栏把手 */
+.sb-handle{
+  position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:45;
+  width:52px;padding:16px 0;background:var(--panel);border:2px solid var(--line);
+  border-right:none;cursor:pointer;writing-mode:vertical-rl;
+  font-size:13px;letter-spacing:5px;color:var(--amber);text-align:center;
+  transition:all .18s;box-shadow:-4px 4px 0 rgba(0,0,0,.4);
+}
+.sb-handle:hover{background:#5a3f2e;color:#fff}
+.sidebar.open ~ .sb-handle{opacity:0;pointer-events:none}
+
+/* ============ 设置弹窗 ============ */
+.mask{
+  position:fixed;inset:0;background:rgba(10,6,4,.72);z-index:80;
+  display:none;align-items:center;justify-content:center;
+}
+.mask.open{display:flex}
+.modal{
+  width:460px;max-width:92vw;background:var(--panel-2);
+  border:3px solid var(--line);box-shadow:8px 8px 0 rgba(0,0,0,.55);
+}
+.modal-hd{
+  padding:12px 16px;border-bottom:2px solid var(--line);
+  font-size:14px;letter-spacing:2px;color:var(--amber);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.modal-body{padding:16px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--cream-dim);letter-spacing:1px}
+.field input{
+  background:rgba(20,14,11,.65);border:2px solid var(--line);
+  color:var(--cream);padding:9px 10px;font-size:13px;
+  font-family:inherit;outline:none;
+}
+.field input:focus{border-color:var(--amber-dim)}
+.field .hint{font-size:11px;color:#8a7562;line-height:1.5}
+.modal-ft{
+  padding:12px 16px;border-top:2px solid var(--line);
+  display:flex;justify-content:flex-end;gap:10px;
+}
+.btn.ghost{background:transparent;color:var(--cream);border-color:var(--line)}
+.btn.ghost:hover{background:rgba(255,200,97,.1);color:var(--amber);border-color:var(--amber)}
+
+/* 番茄钟小卡片 */
+.pomo{
+  position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(140%);
+  z-index:60;background:var(--panel-2);border:3px solid var(--line);
+  padding:14px 22px;display:flex;align-items:center;gap:16px;
+  box-shadow:6px 6px 0 rgba(0,0,0,.5);transition:transform .3s cubic-bezier(.34,1.4,.64,1);
+}
+.pomo.open{transform:translateX(-50%) translateY(0)}
+.pomo .time{font-size:30px;letter-spacing:3px;color:var(--amber);font-variant-numeric:tabular-nums;min-width:112px;text-align:center}
+.pomo .lbl{font-size:11px;color:var(--cream-dim);letter-spacing:2px;margin-top:2px;text-align:center}
+
+/* 提示条 */
+.toast{
+  position:fixed;left:50%;top:24px;z-index:90;
+  background:var(--panel-2);border:2px solid var(--amber);
+  color:var(--amber);padding:9px 18px;font-size:13px;letter-spacing:1px;
+  box-shadow:4px 4px 0 rgba(0,0,0,.5);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transform:translate(-50%,-16px);
+  transition:transform .3s,opacity .3s,visibility .3s;
+}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:rgba(0,0,0,.25)}
+::-webkit-scrollbar-thumb{background:var(--line);border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:var(--line-2);background-clip:padding-box}
+</style>
+</head>
+<body>
+
+<!-- ============ 场景 ============ -->
+<div class="scene" id="scene"></div>
+
+<!-- 人物热区 -->
+<div class="hotspot" id="hotspot">
+  <div class="hint">点 我</div>
+</div>
+
+<!-- 辐射菜单 -->
+<div class="radial" id="radial">
+  <div class="radial-item ri-1" data-act="pomo"><span class="ic">🍅</span><span>番茄钟</span></div>
+  <div class="radial-item ri-2" data-act="ask"><span class="ic">💬</span><span>问问题</span></div>
+  <div class="radial-item ri-3" data-act="review"><span class="ic">🎯</span><span>考考我</span></div>
+  <div class="radial-item ri-4" data-act="close"><span class="ic">✕</span><span>关闭</span></div>
+  <div class="radial-item ri-5" data-act="wrong"><span class="ic">📕</span><span>错题本</span></div>
+  <div class="radial-item ri-6" data-act="setting"><span class="ic">⚙️</span><span>设置</span></div>
+</div>
+
+<!-- ============ 右上角工具栏 ============ -->
+<div class="topbar">
+  <button class="icon-btn" id="tbPomo" title="番茄钟">🍅</button>
+  <button class="icon-btn" id="tbSetting" title="接口设置">⚙</button>
+</div>
+
+<!-- ============ To-Do ============ -->
+<aside class="todo">
+  <div class="todo-hd"><span>TO-DO LIST</span><span class="cnt" id="todoCnt"></span></div>
+  <div class="todo-body" id="todoBody"></div>
+  <div class="todo-add">
+    <input id="todoInput" placeholder="添加一件事，回车确认…" maxlength="60">
+    <button id="todoAdd" title="添加">＋</button>
+  </div>
+</aside>
+
+<!-- ============ 侧栏把手 ============ -->
+<div class="sb-handle" id="sbHandle">临时对话</div>
+
+<!-- ============ 侧栏 ============ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-hd">
+    <span class="title">临时对话</span>
+    <button class="icon-btn" id="sbSetting" title="API 设置">⚙</button>
+    <button class="icon-btn" id="sbClear" title="清空对话">🗑</button>
+    <button class="icon-btn" id="sbClose" title="收起">✕</button>
+  </div>
+  <div class="sb-body" id="sbBody"></div>
+  <div class="sb-foot">
+    <textarea id="sbInput" placeholder="有什么不懂的，随手问我…（Ctrl+Enter 发送）"></textarea>
+    <div class="row">
+      <span class="tip" id="sbTip">未配置 API</span>
+      <button class="btn" id="sbSend">发送</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ 设置 ============ -->
+<div class="mask" id="mask">
+  <div class="modal">
+    <div class="modal-hd"><span>接 口 设 置</span><button class="icon-btn" id="setClose">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>API 地址（OpenAI 兼容）</label>
+        <input id="cfgUrl" placeholder="https://api.deepseek.com">
+        <span class="hint">直接填官方文档给的 <b>BASE URL</b> 就行（如 https://api.deepseek.com），路径会自动补全；也可填完整端点 …/chat/completions</span>
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input id="cfgKey" type="password" placeholder="sk-...">
+        <span class="hint">只存在你自己的浏览器里，不会上传到任何服务器</span>
+      </div>
+      <div class="field">
+        <label>模型名称</label>
+        <input id="cfgModel" placeholder="deepseek-chat">
+      </div>
+      <div class="field">
+        <label>人设提示词（可选）</label>
+        <input id="cfgPrompt" placeholder="你是一个温柔耐心的高中学习伙伴…">
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn ghost" id="setCancel">取消</button>
+      <button class="btn" id="setSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 番茄钟 ============ -->
+<div class="pomo" id="pomo">
+  <div>
+    <div class="time" id="pomoTime">25:00</div>
+    <div class="lbl" id="pomoLbl">专注中</div>
+  </div>
+  <button class="btn" id="pomoToggle">暂停</button>
+  <button class="icon-btn" id="pomoClose">✕</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 工具 ================= */
+const $ = id => document.getElementById(id);
+const LS = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+};
+let toastTimer;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1900);
+}
+
+/* ================= To-Do ================= */
+let todos = LS.get('study_todos', [
+  { id: 1, text: '背 20 个生物名词', done: false },
+  { id: 2, text: '订正昨天的错题', done: false },
+  { id: 3, text: '预习免疫调节', done: true }
+]);
+
+function renderTodos() {
+  const body = $('todoBody');
+  if (!todos.length) {
+    body.innerHTML = '<div class="todo-empty">还没有待办，加一件吧</div>';
+  } else {
+    body.innerHTML = todos.map(t => `
+      <div class="todo-item ${t.done ? 'done' : ''}" data-id="${t.id}">
+        <div class="box" data-act="toggle"></div>
+        <div class="txt">${esc(t.text)}</div>
+        <div class="del" data-act="del">✕</div>
+      </div>`).join('');
+  }
+  const left = todos.filter(t => !t.done).length;
+  $('todoCnt').textContent = todos.length ? `${left}/${todos.length}` : '';
+  LS.set('study_todos', todos);
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function addTodo() {
+  const inp = $('todoInput');
+  const v = inp.value.trim();
+  if (!v) return;
+  todos.push({ id: Date.now(), text: v, done: false });
+  inp.value = '';
+  renderTodos();
+}
+
+$('todoAdd').onclick = addTodo;
+$('todoInput').onkeydown = e => { if (e.key === 'Enter') addTodo(); };
+$('todoBody').onclick = e => {
+  const item = e.target.closest('.todo-item');
+  if (!item) return;
+  const id = Number(item.dataset.id);
+  const t = todos.find(x => x.id === id);
+  if (!t) return;
+  const act = e.target.dataset.act;
+  if (act === 'toggle') { t.done = !t.done; if (t.done) toast('完成一件事，真棒 👏'); }
+  else if (act === 'del') { todos = todos.filter(x => x.id !== id); }
+  else return;
+  renderTodos();
+};
+renderTodos();
+
+/* ================= 辐射菜单 ================= */
+const scene = $('scene'), hotspot = $('hotspot'), radial = $('radial');
+
+function openRadial() {
+  radial.classList.add('open');
+  hotspot.classList.add('hidden');
+  scene.classList.add('dim');
+}
+function closeRadial() {
+  radial.classList.remove('open');
+  hotspot.classList.remove('hidden');
+  scene.classList.remove('dim');
+}
+hotspot.onclick = openRadial;
+radial.onclick = e => {
+  const item = e.target.closest('.radial-item');
+  if (!item) return;
+  const act = item.dataset.act;
+  closeRadial();
+  if (act === 'close') return;
+  if (act === 'ask') { openSidebar(); return; }
+  if (act === 'setting') { openSettings(); return; }
+  if (act === 'pomo') { openPomo(); return; }
+  if (act === 'review') { openSidebar('考考我：把我之前问过的问题，出一道考我'); return; }
+  if (act === 'wrong') { toast('错题本 · 开发中'); return; }
+};
+document.addEventListener('click', e => {
+  if (radial.classList.contains('open') && !radial.contains(e.target) && !hotspot.contains(e.target)) closeRadial();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeRadial(); closeSettings(); } });
+
+/* ================= 侧栏 ================= */
+const sidebar = $('sidebar'), sbBody = $('sbBody');
+
+function openSidebar(prefill) {
+  sidebar.classList.add('open');
+  if (prefill) { $('sbInput').value = prefill; $('sbInput').focus(); }
+  setTimeout(() => $('sbInput').focus(), 320);
+}
+$('sbHandle').onclick = () => openSidebar();
+$('sbClose').onclick = () => sidebar.classList.remove('open');
+$('sbClear').onclick = () => {
+  history.length = 0;
+  renderMsgs();
+  toast('对话已清空（历史已重置）');
+};
+$('sbSetting').onclick = openSettings;
+
+let history = LS.get('study_history', []);
+const DEFAULT_PROMPT = '你是一个温柔、耐心的 AI 学习伙伴，陪伴高中生学习。回答要口语化、简洁，多用鼓励的语气。解释知识点时先说人话，再举一个小例子。不要长篇大论。';
+
+function renderMsgs() {
+  if (!history.length) {
+    sbBody.innerHTML = '<div class="msg sys">随便问我点什么吧。<br>比如「什么是免疫防御」</div>';
+    return;
+  }
+  sbBody.innerHTML = history.map(m => `<div class="msg ${m.role === 'user' ? 'me' : 'ai'}">${esc(m.content).replace(/\n/g, '<br>')}</div>`).join('');
+  sbBody.scrollTop = sbBody.scrollHeight;
+}
+renderMsgs();
+
+const DEFAULT_URL = 'https://api.deepseek.com/v1/chat/completions';
+
+/* 智能补全接口地址：
+   填官方文档的 BASE URL（如 https://api.deepseek.com）或完整端点都能用。
+   SDK 会自动拼 /chat/completions，但手写的 fetch 不会——所以这里替它补上。 */
+function normalizeUrl(raw) {
+  let u = String(raw || '').trim().replace(/\s+/g, '');
+  if (!u) return DEFAULT_URL;
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  u = u.replace(/\/+$/, '');
+  if (/\/chat\/completions$/i.test(u)) return u;   // 已经是完整端点
+  return u + '/chat/completions';                  // 自动补上路径
+}
+
+function cfg() {
+  return {
+    url: normalizeUrl(LS.get('study_api_url', DEFAULT_URL)),
+    key: LS.get('study_api_key', ''),
+    model: LS.get('study_api_model', 'deepseek-chat'),
+    prompt: LS.get('study_api_prompt', DEFAULT_PROMPT),
+    configured: !!LS.get('study_api_key', '')
+  };
+}
+
+async function send() {
+  const inp = $('sbInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  const c = cfg();
+  if (!c.configured) { toast('请先在 ⚙ 设置里填 API Key'); openSettings(); return; }
+
+  history.push({ role: 'user', content: text });
+  inp.value = '';
+  renderMsgs();
+  LS.set('study_history', history);
+
+  const btn = $('sbSend');
+  btn.disabled = true;
+  btn.textContent = '思考中…';
+  sbBody.innerHTML += '<div class="msg ai" id="pending">…</div>';
+  sbBody.scrollTop = sbBody.scrollHeight;
+
+  try {
+    const res = await fetch(c.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.key },
+      body: JSON.stringify({
+        model: c.model,
+        messages: [{ role: 'system', content: c.prompt }, ...history.slice(-16)]
+      })
+    });
+    if (!res.ok) {
+      const body = (await res.text()).slice(0, 200);
+      const hints = {
+        400: '请求格式有问题', 401: 'API Key 无效或未授权', 402: '余额不足',
+        403: '没有权限访问该模型', 404: '接口地址不对（已自动补全，请检查地址拼写）',
+        422: '参数不合法', 429: '请求太频繁，稍后再试',
+        500: '服务商内部错误', 502: '网关错误', 503: '服务暂时不可用'
+      };
+      throw new Error(`HTTP ${res.status}　${hints[res.status] || ''}\n${body}\n\n实际请求地址：${c.url}`);
+    }
+    const data = await res.json();
+    const reply = data?.choices?.[0]?.message?.content ?? '(没有拿到回复)';
+    history.push({ role: 'assistant', content: reply });
+    LS.set('study_history', history);
+    renderMsgs();
+  } catch (err) {
+    renderMsgs();
+    sbBody.innerHTML += `<div class="msg sys">请求失败：${esc(err.message)}</div>`;
+    sbBody.scrollTop = sbBody.scrollHeight;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '发送';
+  }
+}
+$('sbSend').onclick = send;
+$('sbInput').onkeydown = e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); }
+};
+
+/* ================= 设置 ================= */
+const mask = $('mask');
+function openSettings() {
+  const c = cfg();
+  $('cfgUrl').value = c.url;
+  $('cfgKey').value = c.key;
+  $('cfgModel').value = c.model;
+  $('cfgPrompt').value = c.prompt;
+  mask.classList.add('open');
+}
+function closeSettings() { mask.classList.remove('open'); }
+$('setClose').onclick = closeSettings;
+$('setCancel').onclick = closeSettings;
+$('setSave').onclick = () => {
+  LS.set('study_api_url', $('cfgUrl').value.trim() || 'https://api.deepseek.com/v1/chat/completions');
+  LS.set('study_api_key', $('cfgKey').value.trim());
+  LS.set('study_api_model', $('cfgModel').value.trim() || 'deepseek-chat');
+  LS.set('study_api_prompt', $('cfgPrompt').value.trim() || DEFAULT_PROMPT);
+  closeSettings();
+  updateTip();
+  toast('设置已保存');
+};
+mask.onclick = e => { if (e.target === mask) closeSettings(); };
+
+function updateTip() {
+  const c = cfg();
+  $('sbTip').textContent = c.configured ? '已连接 · ' + c.model : '未配置 API（点右上角 ⚙）';
+}
+updateTip();
+
+/* ================= 番茄钟 ================= */
+const pomo = $('pomo');
+let pomoLeft = 25 * 60, pomoTimer = null, pomoRunning = false;
+
+function openPomo() {
+  pomo.classList.add('open');
+  toast('开始专注，我陪着你 🍅');
+}
+$('tbPomo').onclick = () => { closeRadial(); openPomo(); };
+$('tbSetting').onclick = () => openSettings();
+$('pomoClose').onclick = () => { pomo.classList.remove('open'); stopPomo(); };
+$('pomoToggle').onclick = () => pomoRunning ? stopPomo() : startPomo();
+
+function startPomo() {
+  pomoRunning = true;
+  $('pomoToggle').textContent = '暂停';
+  $('pomoLbl').textContent = '专注中';
+  pomoTimer = setInterval(() => {
+    pomoLeft--;
+    paintPomo();
+    if (pomoLeft <= 0) {
+      stopPomo();
+      toast('番茄钟完成！休息一下吧 ✅');
+      pomoLeft = 25 * 60;
+      paintPomo();
+    }
+  }, 1000);
+}
+function stopPomo() {
+  pomoRunning = false;
+  clearInterval(pomoTimer);
+  $('pomoToggle').textContent = '继续';
+  $('pomoLbl').textContent = '已暂停';
+}
+function paintPomo() {
+  const m = String(Math.floor(pomoLeft / 60)).padStart(2, '0');
+  const s = String(pomoLeft % 60).padStart(2, '0');
+  $('pomoTime').textContent = m + ':' + s;
+}
+paintPomo();
+
+/* ================= 演示参数（?demo=radial|sidebar|setting|pomo） ================= */
+const demo = new URLSearchParams(location.search).get('demo');
+if (demo === 'radial')  setTimeout(openRadial, 400);
+if (demo === 'sidebar') setTimeout(() => openSidebar(), 400);
+if (demo === 'setting') setTimeout(openSettings, 400);
+if (demo === 'pomo')    setTimeout(openPomo, 400);
+</script>
+</body>
+</html>
