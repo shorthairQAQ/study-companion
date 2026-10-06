@@ -209,6 +209,62 @@ body{
 .sb-handle:hover{background:#5a3f2e;color:#fff}
 .sidebar.open ~ .sb-handle{opacity:0;pointer-events:none}
 
+/* ============ 疑问库 ============ */
+.vault{
+  position:fixed;right:0;top:0;bottom:0;width:470px;z-index:70;
+  background:var(--panel-2);border-left:3px solid var(--line);
+  display:flex;flex-direction:column;
+  transform:translateX(102%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+  box-shadow:-8px 0 24px rgba(0,0,0,.5);
+}
+.vault.open{transform:translateX(0)}
+.vault-hd{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 14px;border-bottom:2px solid var(--line);
+}
+.vault-hd .title{font-size:14px;letter-spacing:2px;color:var(--amber)}
+.vault-hd .vault-cnt{flex:1;font-size:11px;color:var(--cream-dim)}
+.vault-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.btn.sm{padding:5px 12px;font-size:12px;box-shadow:none}
+.vault-item{border:2px solid var(--line);background:rgba(20,14,11,.45);padding:10px 12px}
+.vault-item .row1{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.vault-item .subj{
+  font-size:11px;padding:1px 6px;background:rgba(255,200,97,.15);
+  border:1px solid var(--line-2);color:var(--amber);
+}
+.vault-item .st{font-size:11px;color:var(--cream-dim);margin-left:auto}
+.vault-item .pt{font-size:13px;color:var(--cream);line-height:1.5;margin-bottom:4px}
+.vault-item .q{font-size:12px;color:var(--cream-dim);line-height:1.5}
+.vault-item .bar{height:6px;background:rgba(0,0,0,.4);margin-top:8px;border:1px solid var(--line)}
+.vault-item .bar i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.vault-empty{padding:34px 16px;text-align:center;font-size:12.5px;color:var(--cream-dim);line-height:2}
+.vault-empty b{color:var(--amber);font-weight:600}
+
+/* 复习卡片 */
+.review-card{border:2px solid var(--amber-dim);background:rgba(255,200,97,.07);padding:14px}
+.review-card .lbl{font-size:11px;color:var(--cream-dim);letter-spacing:2px;margin-bottom:8px}
+.review-card .pt{font-size:15px;color:var(--amber);line-height:1.6;margin-bottom:10px}
+.review-card .hintline{font-size:12px;color:var(--cream-dim);line-height:1.6}
+.review-card .progress{font-size:11px;color:var(--cream-dim);margin-top:10px}
+.review-card textarea{
+  width:100%;height:80px;resize:none;margin-top:12px;
+  background:rgba(20,14,11,.6);border:2px solid var(--line);
+  color:var(--cream);padding:9px 10px;font-size:13px;
+  font-family:inherit;outline:none;line-height:1.5;
+}
+.review-card textarea:focus{border-color:var(--amber-dim)}
+.review-card .acts{display:flex;gap:8px;margin-top:10px}
+.review-result{margin-top:10px;padding:10px;border:2px solid var(--line);font-size:13px;line-height:1.6}
+.review-result.ok{border-color:var(--ok);background:rgba(143,191,106,.12)}
+.review-result.no{border-color:#e07a5f;background:rgba(224,122,95,.12)}
+
+.topbar .icon-btn{position:relative}
+.badge{
+  position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;line-height:17px;
+  padding:0 4px;background:#e07a5f;border:1px solid rgba(255,255,255,.25);color:#fff;
+  font-size:10px;border-radius:10px;text-align:center;white-space:nowrap;
+}
+
 /* ============ 设置弹窗 ============ */
 .mask{
   position:fixed;inset:0;background:rgba(10,6,4,.72);z-index:80;
@@ -286,12 +342,13 @@ body{
   <div class="radial-item ri-2" data-act="ask"><span class="ic">💬</span><span>问问题</span></div>
   <div class="radial-item ri-3" data-act="review"><span class="ic">🎯</span><span>考考我</span></div>
   <div class="radial-item ri-4" data-act="close"><span class="ic">✕</span><span>关闭</span></div>
-  <div class="radial-item ri-5" data-act="wrong"><span class="ic">📕</span><span>错题本</span></div>
+  <div class="radial-item ri-5" data-act="vault"><span class="ic">📚</span><span>疑问库</span></div>
   <div class="radial-item ri-6" data-act="setting"><span class="ic">⚙️</span><span>设置</span></div>
 </div>
 
 <!-- ============ 右上角工具栏 ============ -->
 <div class="topbar">
+  <button class="icon-btn" id="tbVault" title="疑问库">📚<span class="badge" id="vaultBadge"></span></button>
   <button class="icon-btn" id="tbPomo" title="番茄钟">🍅</button>
   <button class="icon-btn" id="tbSetting" title="接口设置">⚙</button>
 </div>
@@ -325,6 +382,17 @@ body{
       <button class="btn" id="sbSend">发送</button>
     </div>
   </div>
+</aside>
+
+<!-- ============ 疑问库 ============ -->
+<aside class="vault" id="vault">
+  <div class="vault-hd">
+    <span class="title">疑问库</span>
+    <span class="vault-cnt" id="vaultCnt"></span>
+    <button class="btn sm" id="vaultReviewBtn">开始复习</button>
+    <button class="icon-btn" id="vaultClose">✕</button>
+  </div>
+  <div class="vault-body" id="vaultBody"></div>
 </aside>
 
 <!-- ============ 设置 ============ -->
@@ -462,8 +530,8 @@ radial.onclick = e => {
   if (act === 'ask') { openSidebar(); return; }
   if (act === 'setting') { openSettings(); return; }
   if (act === 'pomo') { openPomo(); return; }
-  if (act === 'review') { openSidebar('考考我：把我之前问过的问题，出一道考我'); return; }
-  if (act === 'wrong') { toast('错题本 · 开发中'); return; }
+  if (act === 'review') { openVault(); startReview(); return; }
+  if (act === 'vault') { openVault(); return; }
 };
 document.addEventListener('click', e => {
   if (radial.classList.contains('open') && !radial.contains(e.target) && !hotspot.contains(e.target)) closeRadial();
@@ -489,6 +557,100 @@ $('sbSetting').onclick = openSettings;
 
 let history = LS.get('study_history', []);
 const DEFAULT_PROMPT = '你是一个温柔、耐心的 AI 学习伙伴，陪伴高中生学习。回答要口语化、简洁，多用鼓励的语气。解释知识点时先说人话，再举一个小例子。不要长篇大论。';
+
+/* ================= 疑问库（产品核心机制） =================
+   学生随口问的知识疑问 → AI 回答后自动打标签入库
+        → 到期后 AI 反过来考他 → 答对拉长间隔，答错重置
+   数据全部存在本地浏览器，不上传服务器。
+   --------------------------------------------------------- */
+const TAG_RULE = `
+
+【标记规则】每次回答结束后，另起一行输出一个标记块（必须是合法 JSON，不要用代码块包裹）：
+<tag>{"knowledge":true,"subject":"生物","point":"免疫防御的三道防线"}</tag>
+- 学生问的是学科知识 → knowledge 为 true，并填写 subject（学科）与 point（具体知识点）
+- 只是闲聊、寒暄、问功能怎么用 → knowledge 为 false，subject 与 point 留空字符串
+标记块必须是回答的最后一行，不要省略。`;
+
+const REVIEW_INTERVALS = [1, 3, 7, 15, 30];   // 天：间隔重复的复习间隔
+const DAY = 24 * 60 * 60 * 1000;
+
+/* ?mock=1 注入示例数据 —— 录演示视频时用，省得真的问一堆问题 */
+if (new URLSearchParams(location.search).get('mock') === '1'
+    && !LS.get('study_vault', []).length) {
+  const now = Date.now();
+  LS.set('study_vault', [
+    { id: 'm1', content: '什么是免疫防御', subject: '生物', point: '免疫防御的三道防线',
+      answer: '人体有三道防线。第一道是皮肤和黏膜，阻挡病原体；第二道是体液中的杀菌物质和吞噬细胞；第三道是特异性免疫，包括体液免疫和细胞免疫。',
+      status: 'learning', mastery: 34, reviewCount: 1,
+      nextReviewAt: now - 60000, createdAt: now - 3 * DAY, reviews: [] },
+    { id: 'm2', content: '光反应到底在哪进行', subject: '生物', point: '光反应的场所与产物',
+      answer: '光反应在类囊体薄膜上进行，产物是 ATP 和 NADPH，同时释放氧气。',
+      status: 'new', mastery: 0, reviewCount: 0,
+      nextReviewAt: now - 60000, createdAt: now - 2 * DAY, reviews: [] },
+    { id: 'm3', content: '内环境稳态是什么意思', subject: '生物', point: '内环境稳态的概念',
+      answer: '正常机体通过调节作用，使各个器官、系统协调活动，共同维持内环境的相对稳定状态。',
+      status: 'mastered', mastery: 100, reviewCount: 4,
+      nextReviewAt: now + 20 * DAY, createdAt: now - 9 * DAY, reviews: [] }
+  ]);
+}
+
+let vault = LS.get('study_vault', []);
+const saveVault = () => LS.set('study_vault', vault);
+
+/* 从 AI 回复中抽出标记块，并把标记块从正文里剔除 */
+function extractTag(text) {
+  const m = String(text).match(/<tag>([\s\S]*?)<\/tag>/i);
+  if (!m) return { clean: text, tag: null };
+  let tag = null;
+  try { tag = JSON.parse(m[1].trim()); } catch (e) { tag = null; }
+  return { clean: text.replace(m[0], '').trim(), tag };
+}
+
+/* 入库。同一知识点只留一条，重复问到就刷新并重置复习进度 */
+function addQuestion({ content, answer, tag }) {
+  if (!tag || tag.knowledge !== true) return null;
+  const point = String(tag.point || '').trim();
+  const subject = String(tag.subject || '').trim();
+  if (!point) return null;
+
+  const exist = vault.find(q => q.point === point && q.subject === subject);
+  if (exist) {
+    exist.content = content;
+    exist.answer = answer;
+    exist.status = 'new';
+    exist.mastery = 0;
+    exist.reviewCount = 0;
+    exist.nextReviewAt = Date.now() + REVIEW_INTERVALS[0] * DAY;
+    exist.updatedAt = Date.now();
+    saveVault();
+    return exist;
+  }
+
+  const q = {
+    id: 'q' + Date.now() + Math.random().toString(36).slice(2, 6),
+    content, answer, subject, point,
+    status: 'new',                                  // new / learning / mastered
+    mastery: 0,                                     // 掌握度 0-100
+    reviewCount: 0,
+    nextReviewAt: Date.now() + REVIEW_INTERVALS[0] * DAY,
+    createdAt: Date.now(),
+    reviews: []
+  };
+  vault.unshift(q);
+  saveVault();
+  return q;
+}
+
+const dueQuestions = () => vault.filter(q => q.status !== 'mastered' && q.nextReviewAt <= Date.now());
+
+function renderVaultBadge() {
+  const el = $('vaultBadge');
+  if (!el) return;
+  const n = vault.length;
+  const d = dueQuestions().length;
+  el.textContent = n ? (d ? d + ' 待复习' : n + ' 条') : '';
+  el.style.display = n ? '' : 'none';
+}
 
 function renderMsgs() {
   if (!history.length) {
@@ -548,7 +710,7 @@ async function send() {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.key },
       body: JSON.stringify({
         model: c.model,
-        messages: [{ role: 'system', content: c.prompt }, ...history.slice(-16)]
+        messages: [{ role: 'system', content: c.prompt + TAG_RULE }, ...history.slice(-16)]
       })
     });
     if (!res.ok) {
@@ -562,10 +724,19 @@ async function send() {
       throw new Error(`HTTP ${res.status}　${hints[res.status] || ''}\n${body}\n\n实际请求地址：${c.url}`);
     }
     const data = await res.json();
-    const reply = data?.choices?.[0]?.message?.content ?? '(没有拿到回复)';
+    const raw = data?.choices?.[0]?.message?.content ?? '(没有拿到回复)';
+    const { clean: reply, tag } = extractTag(raw);
+
     history.push({ role: 'assistant', content: reply });
     LS.set('study_history', history);
     renderMsgs();
+
+    // 自动沉淀：抽到知识标签就写进疑问库
+    const saved = addQuestion({ content: text, answer: reply, tag });
+    if (saved) {
+      renderVaultBadge();
+      toast('已记进疑问库 · ' + (saved.subject ? saved.subject + ' · ' : '') + saved.point);
+    }
   } catch (err) {
     renderMsgs();
     sbBody.innerHTML += `<div class="msg sys">请求失败：${esc(err.message)}</div>`;
@@ -651,12 +822,182 @@ function paintPomo() {
 }
 paintPomo();
 
-/* ================= 演示参数（?demo=radial|sidebar|setting|pomo） ================= */
+/* ================= 疑问库：列表与复习 ================= */
+const vaultEl = $('vault'), vaultBody = $('vaultBody');
+let reviewQueue = [], reviewIdx = 0;
+
+function openVault() {
+  reviewQueue = [];
+  vaultEl.classList.add('open');
+  renderVault();
+}
+function closeVault() { vaultEl.classList.remove('open'); }
+
+function renderVault() {
+  $('vaultCnt').textContent = vault.length
+    ? `共 ${vault.length} 条 · ${dueQuestions().length} 条待复习` : '';
+
+  if (!vault.length) {
+    vaultBody.innerHTML = `<div class="vault-empty">
+      疑问库还是空的。<br><br>
+      去右边「临时对话」问一个问题吧，<br>
+      比如 <b>什么是免疫防御</b><br>
+      —— 它答完会自动记到这里，<br>
+      以后还会回来考你。
+    </div>`;
+    return;
+  }
+
+  vaultBody.innerHTML = vault.map(q => {
+    const st = q.status === 'mastered' ? '已掌握'
+             : (q.nextReviewAt <= Date.now() ? '该复习了' : '复习中');
+    return `<div class="vault-item">
+      <div class="row1">
+        <span class="subj">${esc(q.subject || '未分类')}</span>
+        <span class="st">${st}</span>
+      </div>
+      <div class="pt">${esc(q.point)}</div>
+      <div class="q">你当时问：${esc(q.content)}</div>
+      <div class="bar"><i style="width:${q.mastery}%"></i></div>
+    </div>`;
+  }).join('');
+}
+
+function startReview() {
+  const due = dueQuestions();
+  const pool = due.length ? due : vault.filter(q => q.status !== 'mastered');
+  if (!pool.length) {
+    toast(vault.length ? '这一批都掌握啦，厉害 🎉' : '疑问库还是空的');
+    return;
+  }
+  vaultEl.classList.add('open');
+  reviewQueue = pool.slice();
+  reviewIdx = 0;
+  showReviewCard();
+}
+
+function showReviewCard() {
+  if (reviewIdx >= reviewQueue.length) {
+    reviewQueue = [];
+    renderVault();
+    renderVaultBadge();
+    toast('这一轮复习完成 👏');
+    return;
+  }
+  const q = reviewQueue[reviewIdx];
+  vaultBody.innerHTML = `<div class="review-card">
+    <div class="lbl">第 ${reviewIdx + 1} / ${reviewQueue.length} 题 · 你以前问过的</div>
+    <div class="pt">${esc(q.point)}</div>
+    <div class="hintline">用你自己的话讲讲这个知识点，看还记得多少。</div>
+    <textarea id="revInput" placeholder="我记得……"></textarea>
+    <div class="acts">
+      <button class="btn" id="revSubmit">提交</button>
+      <button class="btn ghost" id="revSkip">跳过</button>
+      <button class="btn ghost" id="revExit">结束复习</button>
+    </div>
+  </div>`;
+  $('revSubmit').onclick = submitReview;
+  $('revSkip').onclick = () => { reviewIdx++; showReviewCard(); };
+  $('revExit').onclick = () => { reviewQueue = []; renderVault(); };
+  $('revInput').focus();
+}
+
+async function submitReview() {
+  const ans = $('revInput').value.trim();
+  if (!ans) { toast('先写点东西吧'); return; }
+  const q = reviewQueue[reviewIdx];
+  const c = cfg();
+
+  const btn = $('revSubmit');
+  btn.disabled = true;
+  btn.textContent = '判定中…';
+
+  let level = 'partial', comment = '（未配置 API，按部分正确处理）', missing = '';
+
+  if (c.configured) {
+    try {
+      const res = await fetch(c.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.key },
+        body: JSON.stringify({
+          model: c.model,
+          messages: [
+            { role: 'system', content: '你是一个严格但友善的阅卷老师。' },
+            { role: 'user', content:
+              `知识点：${q.point}\n参考回答：${q.answer}\n\n学生的复述：${ans}\n\n` +
+              `请判定学生答得对不对。必须输出一行合法 JSON，用 <result> 包裹：\n` +
+              `<result>{"level":"full|partial|wrong","comment":"给学生的点评（20字内，友好）","missing":"他漏掉的关键点，没有就留空"}</result>` }
+          ]
+        })
+      });
+      const data = await res.json();
+      const raw = data?.choices?.[0]?.message?.content || '';
+      const m = raw.match(/<result>([\s\S]*?)<\/result>/i);
+      if (m) {
+        const r = JSON.parse(m[1].trim());
+        level = r.level || 'partial';
+        comment = r.comment || '';
+        missing = r.missing || '';
+      } else {
+        comment = '（没能解析判定结果，按部分正确处理）';
+      }
+    } catch (e) {
+      comment = '（判定请求失败，按部分正确处理）';
+    }
+  }
+
+  applyReview(q, level, ans);
+
+  const cls = level === 'full' ? 'ok' : 'no';
+  const label = level === 'full' ? '✅ 答得不错'
+              : level === 'partial' ? '🟡 还差一点' : '❌ 这里没记住';
+  vaultBody.innerHTML = `<div class="review-card">
+    <div class="lbl">判定结果</div>
+    <div class="pt">${esc(q.point)}</div>
+    <div class="review-result ${cls}">${label}${comment ? '<br>' + esc(comment) : ''}${missing ? '<br>漏掉：' + esc(missing) : ''}</div>
+    <div class="acts"><button class="btn" id="revNext">下一题</button></div>
+  </div>`;
+  $('revNext').onclick = () => { reviewIdx++; showReviewCard(); };
+  renderVaultBadge();
+}
+
+/* 间隔重复：答对拉长间隔，答错重置 */
+function applyReview(q, level, ans) {
+  q.reviewCount = (q.reviewCount || 0) + 1;
+  q.reviews = q.reviews || [];
+  q.reviews.push({ at: Date.now(), level, answer: ans });
+
+  if (level === 'full') {
+    q.mastery = Math.min(100, q.mastery + 34);
+    const step = Math.min(q.reviewCount, REVIEW_INTERVALS.length - 1);
+    q.nextReviewAt = Date.now() + REVIEW_INTERVALS[step] * DAY;
+    q.status = q.mastery >= 100 ? 'mastered' : 'learning';
+  } else if (level === 'partial') {
+    q.mastery = Math.min(95, q.mastery + 15);
+    q.nextReviewAt = Date.now() + REVIEW_INTERVALS[Math.min(q.reviewCount, 2)] * DAY;
+    q.status = 'learning';
+  } else {
+    q.mastery = Math.max(0, q.mastery - 10);
+    q.reviewCount = 0;
+    q.nextReviewAt = Date.now() + REVIEW_INTERVALS[0] * DAY;
+    q.status = 'new';
+  }
+  saveVault();
+}
+
+$('tbVault').onclick = () => { closeRadial(); openVault(); };
+$('vaultClose').onclick = closeVault;
+$('vaultReviewBtn').onclick = startReview;
+renderVaultBadge();
+
+/* ================= 演示参数（?demo=radial|sidebar|setting|pomo|vault） ================= */
 const demo = new URLSearchParams(location.search).get('demo');
 if (demo === 'radial')  setTimeout(openRadial, 400);
 if (demo === 'sidebar') setTimeout(() => openSidebar(), 400);
 if (demo === 'setting') setTimeout(openSettings, 400);
 if (demo === 'pomo')    setTimeout(openPomo, 400);
+if (demo === 'vault')   setTimeout(openVault, 400);
+if (demo === 'review')  setTimeout(() => { startReview(); }, 400);
 </script>
 </body>
 </html>
