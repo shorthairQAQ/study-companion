@@ -1,0 +1,21 @@
+# 依赖
+node_modules/
+
+# Edge 无头模式缓存（截图验证时会生成）
+.edge*/
+.e*/
+
+# 日志与临时文件
+*.log
+*.tmp
+npm-debug.log*
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
