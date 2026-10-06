@@ -30,20 +30,23 @@ body{
   position:fixed;inset:0;
   overflow:hidden;
   transition:filter .3s;
+  /* 常驻底图：任何时刻都有画面，杜绝加载期黑屏与过渡暗谷 */
+  background:url('bg.jpg') center 38%/cover no-repeat;
 }
-/* 伪动画：5 帧轮流淡入淡出，人物动、背景不动 */
+/* 伪动画：帧轮流淡入淡出，人物动、背景不动 */
 .frame{
   position:absolute;inset:0;
   background-size:cover;
   background-position:center 38%;
   background-repeat:no-repeat;
   opacity:0;
+  will-change:opacity;
 }
-.f1{background-image:url('frames/frame-2.jpg');animation:frameFade 9s infinite}
-.f2{background-image:url('frames/frame-3.jpg');animation:frameFade 9s infinite 1.8s}
-.f3{background-image:url('frames/frame-5.jpg');animation:frameFade 9s infinite 3.6s}
-.f4{background-image:url('frames/frame-4.jpg');animation:frameFade 9s infinite 5.4s}
-.f5{background-image:url('frames/frame-1.jpg');animation:frameFade 9s infinite 7.2s}
+.f1{background-image:url('frames/frame-2.jpg');animation:frameFade 9s linear infinite}
+.f2{background-image:url('frames/frame-3.jpg');animation:frameFade 9s linear infinite 1.8s}
+.f3{background-image:url('frames/frame-5.jpg');animation:frameFade 9s linear infinite 3.6s}
+.f4{background-image:url('frames/frame-4.jpg');animation:frameFade 9s linear infinite 5.4s}
+.f5{background-image:url('frames/frame-1.jpg');animation:frameFade 9s linear infinite 7.2s}
 @keyframes frameFade{
   0%{opacity:0}
   5%{opacity:1}
