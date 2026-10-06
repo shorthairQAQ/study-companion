@@ -19,3 +19,8 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# 作废文档与中间产物（保留在磁盘，不入库）
+AI辅学项目-需求地图-v0.1.md
+assets/
+
