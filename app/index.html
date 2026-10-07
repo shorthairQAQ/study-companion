@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- 部分提示词设计借鉴 Study-Mate (MIT © 2026 Cattofu) https://github.com/Miaotofu01/Study-Mate -->
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -269,6 +270,27 @@ body{
 .review-result{margin-top:10px;padding:10px;border:2px solid var(--line);font-size:13px;line-height:1.6}
 .review-result.ok{border-color:var(--ok);background:rgba(143,191,106,.12)}
 .review-result.no{border-color:#e07a5f;background:rgba(224,122,95,.12)}
+/* 判不出来时显式跳过：中性色，不写成「错了」 */
+.review-result.skip{border-style:dashed;border-color:var(--line-2);background:rgba(0,0,0,.25);color:var(--cream-dim)}
+
+/* 误解档案：重要度 / 置顶 / 卡住的地方 / 跟进建议 */
+.vault-item.pinned{border-color:var(--amber);background:rgba(255,200,97,.10)}
+.vault-item .imp{font-size:11px;padding:1px 6px;border:1px solid var(--line-2);color:var(--cream-dim)}
+.vault-item .imp-high{color:#e8b48a;border-color:#e07a5f;background:rgba(224,122,95,.14)}
+.vault-item .imp-medium{color:var(--amber);border-color:var(--line-2);background:rgba(255,200,97,.12)}
+.vault-item .imp-low{color:var(--cream-dim)}
+.vault-item .pin{font-size:11px;color:var(--amber)}
+.vault-item .mis{font-size:12px;color:#e8b48a;line-height:1.55;margin-top:6px}
+.vault-item .fu{font-size:12px;color:var(--ok);line-height:1.55;margin-top:4px}
+/* 「差一步怎么过」：讲的是改进路径，配色用「可以走通」的绿，不用报错的红 */
+.next-step{
+  margin-top:8px;padding:10px 12px;font-size:13px;line-height:1.65;
+  border:2px solid var(--ok);border-left:4px solid var(--ok);
+  background:rgba(143,191,106,.10);color:var(--cream);
+}
+.next-step b{color:var(--ok)}
+.mis-note,.fu-note{margin-top:8px;font-size:12px;line-height:1.6;color:#e8b48a}
+.fu-note{color:var(--amber-dim)}
 
 .topbar .icon-btn{position:relative}
 .badge{
@@ -568,20 +590,24 @@ $('sbClear').onclick = () => {
 $('sbSetting').onclick = openSettings;
 
 let history = LS.get('study_history', []);
-const DEFAULT_PROMPT = '你是一个温柔、耐心的 AI 学习伙伴，陪伴高中生学习。回答要口语化、简洁，多用鼓励的语气。解释知识点时先说人话，再举一个小例子。不要长篇大论。';
+const DEFAULT_PROMPT = '你是一个温柔、耐心的 AI 学习伙伴，陪伴高中生学习。回答要口语化、简洁，多用鼓励的语气。解释知识点时先说人话，再举一个小例子。不要长篇大论。回答的正文最后一行，固定用「下一步：…」给一个可执行的建议动作（例如"下一步：要不要我出个小问题考考你"、"下一步：接着看你的待办清单"）。同一件事不要重复追问——如果上一轮已经提过而学生没回应，就不要再提，自然结束即可。';
 
 /* ================= 疑问库（产品核心机制） =================
    学生随口问的知识疑问 → AI 回答后自动打标签入库
         → 到期后 AI 反过来考他 → 答对拉长间隔，答错重置
    数据全部存在本地浏览器，不上传服务器。
    --------------------------------------------------------- */
+/* 标记规则：问答双方都靠这段结构化数据沟通，字段认不出就不写库，不猜。
+   importance 判据、字段结构借鉴 Study-Mate (MIT © 2026 Cattofu)。 */
 const TAG_RULE = `
 
 【标记规则】每次回答结束后，另起一行输出一个标记块（必须是合法 JSON，不要用代码块包裹）：
-<tag>{"knowledge":true,"subject":"生物","point":"免疫防御的三道防线"}</tag>
+<tag>{"knowledge":true,"subject":"生物","point":"免疫防御的三道防线","importance":"high"}</tag>
 - 学生问的是学科知识 → knowledge 为 true，并填写 subject（学科）与 point（具体知识点）
-- 只是闲聊、寒暄、问功能怎么用 → knowledge 为 false，subject 与 point 留空字符串
-标记块必须是回答的最后一行，不要省略。`;
+- 只是闲聊、寒暄、问功能怎么用 → knowledge 为 false，subject 与 point 留空字符串，importance 记 "low"
+- importance 判据：影响后续学习的（前置知识错）记 "high"；一次性小疑问记 "low"；拿不准记 "medium"
+- 四个字段都要写，任何字段都不许写 null
+- 标记块必须是整条回复的最后一行；正文的收尾（比如「下一步：…」）写在标记块之前。不要省略标记块。`;
 
 const REVIEW_INTERVALS = [1, 3, 7, 15, 30];   // 天：间隔重复的复习间隔
 const DAY = 24 * 60 * 60 * 1000;
@@ -591,51 +617,84 @@ if (new URLSearchParams(location.search).get('mock') === '1'
     && !LS.get('study_vault', []).length) {
   const now = Date.now();
   LS.set('study_vault', [
-    { id: 'm1', content: '什么是免疫防御', subject: '生物', point: '免疫防御的三道防线',
-      answer: '人体有三道防线。第一道是皮肤和黏膜，阻挡病原体；第二道是体液中的杀菌物质和吞噬细胞；第三道是特异性免疫，包括体液免疫和细胞免疫。',
-      status: 'learning', mastery: 34, reviewCount: 1,
-      nextReviewAt: now - 60000, createdAt: now - 3 * DAY, reviews: [] },
     { id: 'm2', content: '光反应到底在哪进行', subject: '生物', point: '光反应的场所与产物',
       answer: '光反应在类囊体薄膜上进行，产物是 ATP 和 NADPH，同时释放氧气。',
-      status: 'new', mastery: 0, reviewCount: 0,
+      status: 'new', mastery: 0, reviewCount: 0, askCount: 1,
+      importance: 'medium', misunderstanding: '', followUp: '',
       nextReviewAt: now - 60000, createdAt: now - 2 * DAY, reviews: [] },
     { id: 'm3', content: '内环境稳态是什么意思', subject: '生物', point: '内环境稳态的概念',
       answer: '正常机体通过调节作用，使各个器官、系统协调活动，共同维持内环境的相对稳定状态。',
-      status: 'mastered', mastery: 100, reviewCount: 4,
-      nextReviewAt: now + 20 * DAY, createdAt: now - 9 * DAY, reviews: [] }
+      status: 'mastered', mastery: 100, reviewCount: 4, askCount: 1,
+      importance: 'low', misunderstanding: '', followUp: '',
+      nextReviewAt: now + 20 * DAY, createdAt: now - 9 * DAY, reviews: [] },
+    // 故意放在数组最后：askCount 到 3 应该被置顶，渲染时排在第一条
+    { id: 'm1', content: '什么是免疫防御', subject: '生物', point: '免疫防御的三道防线',
+      answer: '人体有三道防线。第一道是皮肤和黏膜，阻挡病原体；第二道是体液中的杀菌物质和吞噬细胞；第三道是特异性免疫，包括体液免疫和细胞免疫。',
+      status: 'learning', mastery: 34, reviewCount: 1, askCount: 3,
+      importance: 'high',
+      misunderstanding: '把第二道防线（杀菌物质和吞噬细胞）说成了特异性免疫，三道防线的层次没分清。',
+      followUp: '下次复习专门问一次第二道防线的作用，看能不能不看笔记讲出来。',
+      nextReviewAt: now - 60000, createdAt: now - 3 * DAY, reviews: [] }
   ]);
 }
 
 let vault = LS.get('study_vault', []);
 const saveVault = () => LS.set('study_vault', vault);
 
-/* 从 AI 回复中抽出标记块，并把标记块从正文里剔除 */
+/* 归一化比较键：学科 + 知识点，去空格、忽略大小写 —— 判断「是不是同一条疑问」 */
+const normKey = s => String(s == null ? '' : s).replace(/\s+/g, '').toLowerCase();
+/* 模型给的字段可能是 null / 数字 / 对象，统一转成安全字符串（旧数据没有字段也不会崩） */
+const asText = v => (v === null || v === undefined || typeof v === 'object') ? '' : String(v).trim();
+const IMPORTANCE = ['low', 'medium', 'high'];
+/* importance 兜底：旧数据没这个字段、模型乱填 → 都按 medium */
+const normImportance = v => {
+  const s = asText(v).toLowerCase();
+  return IMPORTANCE.indexOf(s) >= 0 ? s : 'medium';
+};
+/* 问到第 3 次就该换个讲法了：列表里置顶、重要度记 high */
+const ASK_PIN = 3;
+const isPinned = q => (Number(q && q.askCount) || 0) >= ASK_PIN;
+
+/* 从 AI 回复中抽出标记块，并把标记块从正文里剔除。
+   解析失败不猜也不静默：tag 为 null，同时用 tagBroken 说明「有标记块但认不出来」 */
 function extractTag(text) {
-  const m = String(text).match(/<tag>([\s\S]*?)<\/tag>/i);
-  if (!m) return { clean: text, tag: null };
+  const src = String(text);
+  const m = src.match(/<tag>([\s\S]*?)<\/tag>/i);
+  if (!m) return { clean: src, tag: null, tagBroken: false };
   let tag = null;
   try { tag = JSON.parse(m[1].trim()); } catch (e) { tag = null; }
-  return { clean: text.replace(m[0], '').trim(), tag };
+  if (!tag || typeof tag !== 'object' || Array.isArray(tag)) tag = null;
+  return { clean: src.replace(m[0], '').trim(), tag, tagBroken: !tag };
 }
 
-/* 入库。同一知识点只留一条，重复问到就刷新并重置复习进度 */
+/* 入库。同一知识点只留一条（按 subject+point 归一化后比较），重复问到就刷新并重置复习进度。
+   第 3 次问到同一条：importance 提到 high + 列表置顶 + 回答末尾追加「换个讲法」的提示。
+   返回 { q, repeat }：repeat = 这是第几次问到（计数纯前端做，不需要后端/向量检索）。 */
 function addQuestion({ content, answer, tag }) {
   if (!tag || tag.knowledge !== true) return null;
-  const point = String(tag.point || '').trim();
-  const subject = String(tag.subject || '').trim();
+  const point = asText(tag.point);
+  const subject = asText(tag.subject);
   if (!point) return null;
 
-  const exist = vault.find(q => q.point === point && q.subject === subject);
+  const importance = normImportance(tag.importance);
+  const key = normKey(subject) + '|' + normKey(point);
+  const exist = vault.find(q => normKey(q.subject) + '|' + normKey(q.point) === key);
+
   if (exist) {
+    // 旧条目没存过 askCount：它本身算被问过 1 次，从这里往上加
+    exist.askCount = (Number(exist.askCount) || 1) + 1;
     exist.content = content;
     exist.answer = answer;
+    // 重要度只升不降：判过 high 的别被后来的 low/medium 冲掉；到第 3 次强制 high
+    exist.importance = (exist.importance === 'high' || importance === 'high' || exist.askCount >= ASK_PIN)
+      ? 'high' : importance;
     exist.status = 'new';
     exist.mastery = 0;
     exist.reviewCount = 0;
     exist.nextReviewAt = Date.now() + REVIEW_INTERVALS[0] * DAY;
     exist.updatedAt = Date.now();
     saveVault();
-    return exist;
+    return { q: exist, repeat: exist.askCount };
   }
 
   const q = {
@@ -644,13 +703,17 @@ function addQuestion({ content, answer, tag }) {
     status: 'new',                                  // new / learning / mastered
     mastery: 0,                                     // 掌握度 0-100
     reviewCount: 0,
+    askCount: 1,                                    // 被问到过几次（用来判定「问第 3 次」）
+    importance,                                     // low / medium / high
+    misunderstanding: '',                           // 学生具体错在哪（复习判定时回填）
+    followUp: '',                                   // 建议的跟进动作（复习判定时回填）
     nextReviewAt: Date.now() + REVIEW_INTERVALS[0] * DAY,
     createdAt: Date.now(),
     reviews: []
   };
   vault.unshift(q);
   saveVault();
-  return q;
+  return { q, repeat: 1 };
 }
 
 const dueQuestions = () => vault.filter(q => q.status !== 'mastered' && q.nextReviewAt <= Date.now());
@@ -737,18 +800,26 @@ async function send() {
     }
     const data = await res.json();
     const raw = data?.choices?.[0]?.message?.content ?? '(没有拿到回复)';
-    const { clean: reply, tag } = extractTag(raw);
-
-    history.push({ role: 'assistant', content: reply });
-    LS.set('study_history', history);
-    renderMsgs();
+    const { clean: reply, tag, tagBroken } = extractTag(raw);
 
     // 自动沉淀：抽到知识标签就写进疑问库
     const saved = addQuestion({ content: text, answer: reply, tag });
+    let out = reply;
     if (saved) {
       renderVaultBadge();
-      toast('已记进疑问库 · ' + (saved.subject ? saved.subject + ' · ' : '') + saved.point);
+      toast('已记进疑问库 · ' + (saved.q.subject ? saved.q.subject + ' · ' : '') + saved.q.point);
+      // 同一条问到第 3 次：换个讲法，而不是把同一句话再说一遍
+      if (saved.repeat >= ASK_PIN) {
+        out = reply + `\n\n这个点你已经问过 ${saved.repeat} 次了，要不要我换个讲法专门讲一遍？`;
+      }
+    } else if (tagBroken) {
+      // 认不出就不写库（保持），但要说一声，别让用户以为记下了
+      toast('这次没能识别出知识点，没有记录');
     }
+
+    history.push({ role: 'assistant', content: out });
+    LS.set('study_history', history);
+    renderMsgs();
   } catch (err) {
     renderMsgs();
     sbBody.innerHTML += `<div class="msg sys">请求失败：${esc(err.message)}</div>`;
@@ -860,17 +931,29 @@ function renderVault() {
     return;
   }
 
-  vaultBody.innerHTML = vault.map(q => {
+  // 问到第 3 次的置顶（sort 稳定，其余保持原有顺序）；不引入后端/向量检索
+  const ordered = vault.slice().sort((a, b) => (isPinned(b) ? 1 : 0) - (isPinned(a) ? 1 : 0));
+
+  vaultBody.innerHTML = ordered.map(q => {
     const st = q.status === 'mastered' ? '已掌握'
              : (q.nextReviewAt <= Date.now() ? '该复习了' : '复习中');
-    return `<div class="vault-item">
+    const imp = normImportance(q.importance);
+    const impLabel = { high: '重要', medium: '一般', low: '小疑问' }[imp];
+    const mis = asText(q.misunderstanding);
+    const fu = asText(q.followUp);
+    const pct = Math.max(0, Math.min(100, Number(q.mastery) || 0));
+    return `<div class="vault-item${isPinned(q) ? ' pinned' : ''}">
       <div class="row1">
         <span class="subj">${esc(q.subject || '未分类')}</span>
+        <span class="imp imp-${imp}">${impLabel}</span>
+        ${isPinned(q) ? `<span class="pin">已问 ${Number(q.askCount) || 0} 次</span>` : ''}
         <span class="st">${st}</span>
       </div>
-      <div class="pt">${esc(q.point)}</div>
-      <div class="q">你当时问：${esc(q.content)}</div>
-      <div class="bar"><i style="width:${q.mastery}%"></i></div>
+      <div class="pt">${esc(q.point || '')}</div>
+      <div class="q">你当时问：${esc(q.content || '')}</div>
+      ${mis ? `<div class="mis">⚠ 卡住的地方：${esc(mis)}</div>` : ''}
+      ${fu ? `<div class="fu">→ 跟进建议：${esc(fu)}</div>` : ''}
+      <div class="bar"><i style="width:${pct}%"></i></div>
     </div>`;
   }).join('');
 }
@@ -900,8 +983,8 @@ function showReviewCard() {
   vaultBody.innerHTML = `<div class="review-card">
     <div class="lbl">第 ${reviewIdx + 1} / ${reviewQueue.length} 题 · 你以前问过的</div>
     <div class="pt">${esc(q.point)}</div>
-    <div class="hintline">用你自己的话讲讲这个知识点，看还记得多少。</div>
-    <textarea id="revInput" placeholder="我记得……"></textarea>
+    <div class="hintline">不要背定义——用你自己的话讲讲这个知识点，最好举一个你自己的例子。</div>
+    <textarea id="revInput" placeholder="我理解它是这样：…"></textarea>
     <div class="acts">
       <button class="btn" id="revSubmit">提交</button>
       <button class="btn ghost" id="revSkip">跳过</button>
@@ -914,6 +997,33 @@ function showReviewCard() {
   $('revInput').focus();
 }
 
+/* 判定规则：把「AI 说对错」变成「有判据的评分」。
+   三档口径、每条结论必须指向具体证据、禁机械复述得分 —— 借鉴 Study-Mate
+   layered-practice / evidence-check（MIT © 2026 Cattofu）。 */
+const JUDGE_RULE = `你是一个严格但友善的阅卷老师，按下面的评分规则判定学生的复述。
+
+【三档口径】
+- full：通过。判分要点都讲清了，而且有自己的解释。
+- partial：部分通过。missing 里必须列出「缺哪一条判分要点」，并写清「差一步怎么过」。
+- wrong：不通过。必须给出原因，并在 missing 里写清「差一步怎么过」。
+
+【每条结论必须指向具体证据】
+- 判 full 时，必须能在学生原话里指出支撑这个判断的具体那一句。
+- 指不出具体证据的，一律判 partial 或 wrong，不许判 full。
+- 不得因为「学生说懂了」「语气自信」「字数多」「态度好」就判过——说懂了不是证据。
+
+【禁止机械复述得分】
+- 只是背定义、背原句、复述参考回答，而没有自己的解释，不能判 full。
+- 这种情况判 partial，并在 missing 里写明：「你只是复述了原句，试试用自己的话解释为什么」。
+
+【字段怎么写】
+- missing：缺哪一条判分要点 + 差一步怎么过（判 full 时留空字符串）。
+- misunderstanding：学生具体在哪里理解错了；没有明显错误就留空字符串。
+- followUp：建议的跟进动作，一句话。
+
+【输出格式】必须输出一行合法 JSON，用 <result> 包裹，不要用代码块，不要输出别的格式：
+<result>{"level":"full|partial|wrong","comment":"给学生的点评（20字内，友好）","missing":"缺哪条要点 + 差一步怎么过","misunderstanding":"学生具体错在哪","followUp":"建议的跟进动作"}</result>`;
+
 async function submitReview() {
   const ans = $('revInput').value.trim();
   if (!ans) { toast('先写点东西吧'); return; }
@@ -924,9 +1034,14 @@ async function submitReview() {
   btn.disabled = true;
   btn.textContent = '判定中…';
 
-  let level = 'partial', comment = '（未配置 API，按部分正确处理）', missing = '';
+  /* 状态以结构化数据为准，模型说的话不算数：判不出来就不判，而不是猜一个 partial。
+     level 保持 null 时 → 不动掌握度、不改下次复习时间。 */
+  let level = null, comment = '', missing = '', misunderstanding = '', followUp = '', skipWhy = '';
 
-  if (c.configured) {
+  if (!c.configured) {
+    skipWhy = '还没配置 API，这次没法判定';
+  } else {
+    let raw = '';
     try {
       const res = await fetch(c.url, {
         method: 'POST',
@@ -934,50 +1049,90 @@ async function submitReview() {
         body: JSON.stringify({
           model: c.model,
           messages: [
-            { role: 'system', content: '你是一个严格但友善的阅卷老师。' },
+            { role: 'system', content: JUDGE_RULE },
             { role: 'user', content:
               `知识点：${q.point}\n参考回答：${q.answer}\n\n学生的复述：${ans}\n\n` +
-              `请判定学生答得对不对。必须输出一行合法 JSON，用 <result> 包裹：\n` +
-              `<result>{"level":"full|partial|wrong","comment":"给学生的点评（20字内，友好）","missing":"他漏掉的关键点，没有就留空"}</result>` }
+              `请按评分规则判定，并输出一行 <result>{...}</result>。` }
           ]
         })
       });
-      const data = await res.json();
-      const raw = data?.choices?.[0]?.message?.content || '';
-      const m = raw.match(/<result>([\s\S]*?)<\/result>/i);
-      if (m) {
-        const r = JSON.parse(m[1].trim());
-        level = r.level || 'partial';
-        comment = r.comment || '';
-        missing = r.missing || '';
+      if (!res.ok) {
+        skipWhy = '判定请求失败（HTTP ' + res.status + '）';
       } else {
-        comment = '（没能解析判定结果，按部分正确处理）';
+        const data = await res.json();
+        raw = data?.choices?.[0]?.message?.content || '';
       }
     } catch (e) {
-      comment = '（判定请求失败，按部分正确处理）';
+      skipWhy = '判定请求失败';
+    }
+
+    if (!skipWhy) {
+      const m = raw.match(/<result>([\s\S]*?)<\/result>/i);
+      let r = null;
+      try { r = m ? JSON.parse(m[1].trim()) : null; } catch (e) { r = null; }
+      const lv = r ? asText(r.level).toLowerCase() : '';
+      if (lv === 'full' || lv === 'partial' || lv === 'wrong') {
+        level = lv;
+        comment = asText(r.comment);
+        missing = asText(r.missing);
+        misunderstanding = asText(r.misunderstanding);
+        followUp = asText(r.followUp);
+        if (level === 'full') missing = '';            // 通过了就不显示「差一步」
+      } else {
+        skipWhy = '这次没能解析出判定结果';             // 不按 partial 处理
+      }
     }
   }
 
-  applyReview(q, level, ans);
+  if (!level) { renderReviewResult(q, null, '', '', '', '', skipWhy); return; }
 
-  const cls = level === 'full' ? 'ok' : 'no';
-  const label = level === 'full' ? '✅ 答得不错'
+  applyReview(q, level, ans, { comment, missing, misunderstanding, followUp });
+  renderReviewResult(q, level, comment, missing, misunderstanding, followUp, '');
+}
+
+/* 判定结果卡片。partial / wrong 必须显示「差一步怎么过」，并且要看得出来
+   这是改进路径而不是「你错了」；完整通过时不显示。 */
+function renderReviewResult(q, level, comment, missing, misunderstanding, followUp, skipWhy) {
+  const isFull = level === 'full';
+  const label = level === null ? '⏸ 这次没判定'
+              : isFull ? '✅ 答得不错'
               : level === 'partial' ? '🟡 还差一点' : '❌ 这里没记住';
+  const cls = level === null ? 'skip' : (isFull ? 'ok' : 'no');
+
   vaultBody.innerHTML = `<div class="review-card">
     <div class="lbl">判定结果</div>
-    <div class="pt">${esc(q.point)}</div>
-    <div class="review-result ${cls}">${label}${comment ? '<br>' + esc(comment) : ''}${missing ? '<br>漏掉：' + esc(missing) : ''}</div>
+    <div class="pt">${esc(q.point || '')}</div>
+    <div class="review-result ${cls}">${label}${
+      level === null
+        ? `<br>${esc(skipWhy || '这次没能解析出判定结果')}，已跳过（不影响掌握度）`
+        : (comment ? '<br>' + esc(comment) : '')
+    }</div>
+    ${missing ? `<div class="next-step"><b>差一步怎么过：</b>${esc(missing)}</div>` : ''}
+    ${misunderstanding ? `<div class="mis-note">⚠ 卡住的地方：${esc(misunderstanding)}</div>` : ''}
+    ${followUp ? `<div class="fu-note">→ 跟进建议：${esc(followUp)}</div>` : ''}
     <div class="acts"><button class="btn" id="revNext">下一题</button></div>
   </div>`;
   $('revNext').onclick = () => { reviewIdx++; showReviewCard(); };
   renderVaultBadge();
 }
 
-/* 间隔重复：答对拉长间隔，答错重置 */
-function applyReview(q, level, ans) {
+/* 间隔重复：答对拉长间隔，答错重置。
+   只记可观察的证据：判不出来（level 不是三档）时直接返回，什么状态都不动。 */
+function applyReview(q, level, ans, extra) {
+  if (level !== 'full' && level !== 'partial' && level !== 'wrong') return;
+  const ex = extra || {};
+  q.mastery = Number(q.mastery) || 0;                // 兜底：旧数据可能没有这个字段
   q.reviewCount = (q.reviewCount || 0) + 1;
   q.reviews = q.reviews || [];
-  q.reviews.push({ at: Date.now(), level, answer: ans });
+  // 旧结论留在 reviews[] 里，不覆盖删除
+  q.reviews.push({ at: Date.now(), level, answer: ans,
+    comment: ex.comment || '', missing: ex.missing || '',
+    misunderstanding: ex.misunderstanding || '', followUp: ex.followUp || '' });
+
+  // 误解回填：只覆盖有内容的判定；讲明白了就把当前误解清空（历史仍在 reviews[]）
+  if (ex.misunderstanding) q.misunderstanding = ex.misunderstanding;
+  else if (level === 'full') q.misunderstanding = '';
+  if (ex.followUp) q.followUp = ex.followUp;
 
   if (level === 'full') {
     q.mastery = Math.min(100, q.mastery + 34);
