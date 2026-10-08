@@ -862,12 +862,32 @@ $('sbClear').onclick = () => {
 $('sbSetting').onclick = openSettings;
 
 /* ================= 生物知识地图：静态数据 =================
-   目录来源：人教版（2019）高中生物 必修一《分子与细胞》的真实章节目录
-   （第1章 走近细胞 … 第6章 细胞的生命历程，共 6 章 19 节，连同「生物」「必修一」
-   两个层级一共 27 个节点）。
+   目录来源：人教版（2019）高中生物全套五本教材的真实章节目录，已联网逐条交叉核实
+   （教材目录以「电子课本网 · 人教版生物」为准；章/节名再用教辅复习提纲、教学
+   设计合集两个独立来源对过一遍）：
+     必修一《分子与细胞》        6 章 19 节
+     必修二《遗传与进化》        6 章 18 节
+     选择性必修一《稳态与调节》  5 章 18 节
+     选择性必修二《生物与环境》  4 章 14 节
+     选择性必修三《生物技术与工程》4 章 13 节
+   连同「生物」根节点，一共 113 个节点（5 册 + 25 章 + 82 节 + 1 个根）。
+
    difficulty = AI 预置的学习难度（0.5~5 星，可带半星），学生可以在界面上改。
-   树是可扩展结构：以后要加「必修二 / 选修 1/2/3」，只需往 BIO_TREE.children
-   里再推一个同构节点，渲染与统计代码不用改一行 —— 本版只放必修一的数据。
+   定值依据：公开的重难点共识 + 高考考情（高频考点、抽象度、易错度三方面综合），
+   逐节点给分，不是整册一个值。
+
+   ★ 节点 id 规则（全局唯一，务必沿用）：
+     册：必修1=bx1、必修2=bx2；选择性必修1/2/3 = xx1 / xx2 / xx3
+     章：<册id>-ch<章号>            例 bx2-ch3、xx1-ch4
+     节：<册id>-ch<章号>-s<节号>    例 bx2-ch3-s2、xx3-ch2-s1
+   章号 / 节号都不补前导零，与既有数据保持一致。
+
+   ⚠️ 必修一（bx1）的 id、name、difficulty 一个字都不能改：
+     疑问库 study_exams、掌握度 study_map_mastery、难度 study_map_diff 都是
+     按节点 id 存的，改了 id 会让用户已有数据全部对不上。
+
+   树是可扩展结构：以后要加别的学科，只需往 SUBJECT_ROOTS 里再推一个同构根节点，
+   渲染与统计代码不用改一行（本版把五本教材都放进 BIO_TREE.children 了）。
    ---------------------------------------------------------- */
 
 /* 难度定值的依据：公开的重难点共识 + 高考考情。
@@ -907,6 +927,119 @@ const BIO_TREE = {
         { id: 'bx1-ch6-s1', name: '第1节 细胞的增殖', difficulty: 4 },
         { id: 'bx1-ch6-s2', name: '第2节 细胞的分化', difficulty: 2.5 },
         { id: 'bx1-ch6-s3', name: '第3节 细胞的衰老和死亡', difficulty: 2 }
+      ]}
+    ]},
+    /* ---------- 必修二《遗传与进化》：6 章 18 节 ---------- */
+    { id: 'bx2', name: '必修二 · 遗传与进化', difficulty: 4, children: [
+      { id: 'bx2-ch1', name: '第1章 遗传因子的发现', difficulty: 3, children: [
+        { id: 'bx2-ch1-s1', name: '第1节 孟德尔的豌豆杂交实验（一）', difficulty: 3.5 },
+        { id: 'bx2-ch1-s2', name: '第2节 孟德尔的豌豆杂交实验（二）', difficulty: 4.5 }
+      ]},
+      { id: 'bx2-ch2', name: '第2章 基因和染色体的关系', difficulty: 4, children: [
+        { id: 'bx2-ch2-s1', name: '第1节 减数分裂和受精作用', difficulty: 4.5 },
+        { id: 'bx2-ch2-s2', name: '第2节 基因在染色体上', difficulty: 3 },
+        { id: 'bx2-ch2-s3', name: '第3节 伴性遗传', difficulty: 4 }
+      ]},
+      { id: 'bx2-ch3', name: '第3章 基因的本质', difficulty: 3.5, children: [
+        { id: 'bx2-ch3-s1', name: '第1节 DNA是主要的遗传物质', difficulty: 3 },
+        { id: 'bx2-ch3-s2', name: '第2节 DNA的结构', difficulty: 3.5 },
+        { id: 'bx2-ch3-s3', name: '第3节 DNA的复制', difficulty: 4 },
+        { id: 'bx2-ch3-s4', name: '第4节 基因通常是有遗传效应的DNA片段', difficulty: 2.5 }
+      ]},
+      { id: 'bx2-ch4', name: '第4章 基因的表达', difficulty: 4, children: [
+        { id: 'bx2-ch4-s1', name: '第1节 基因指导蛋白质的合成', difficulty: 4.5 },
+        { id: 'bx2-ch4-s2', name: '第2节 基因表达与性状的关系', difficulty: 4 }
+      ]},
+      { id: 'bx2-ch5', name: '第5章 基因突变及其他变异', difficulty: 4, children: [
+        { id: 'bx2-ch5-s1', name: '第1节 基因突变和基因重组', difficulty: 4 },
+        { id: 'bx2-ch5-s2', name: '第2节 染色体变异', difficulty: 4 },
+        { id: 'bx2-ch5-s3', name: '第3节 人类遗传病', difficulty: 3 }
+      ]},
+      { id: 'bx2-ch6', name: '第6章 生物的进化', difficulty: 3.5, children: [
+        { id: 'bx2-ch6-s1', name: '第1节 生物有共同祖先的证据', difficulty: 2.5 },
+        { id: 'bx2-ch6-s2', name: '第2节 自然选择与适应的形成', difficulty: 3 },
+        { id: 'bx2-ch6-s3', name: '第3节 种群基因组成的变化与物种的形成', difficulty: 4.5 },
+        { id: 'bx2-ch6-s4', name: '第4节 协同进化与生物多样性的形成', difficulty: 3 }
+      ]}
+    ]},
+    /* ---------- 选择性必修一《稳态与调节》：5 章 18 节 ---------- */
+    { id: 'xx1', name: '选择性必修一 · 稳态与调节', difficulty: 4, children: [
+      { id: 'xx1-ch1', name: '第1章 人体的内环境与稳态', difficulty: 3, children: [
+        { id: 'xx1-ch1-s1', name: '第1节 细胞生活的环境', difficulty: 3 },
+        { id: 'xx1-ch1-s2', name: '第2节 内环境的稳态', difficulty: 3 }
+      ]},
+      { id: 'xx1-ch2', name: '第2章 神经调节', difficulty: 4.5, children: [
+        { id: 'xx1-ch2-s1', name: '第1节 神经调节的结构基础', difficulty: 3 },
+        { id: 'xx1-ch2-s2', name: '第2节 神经调节的基本方式', difficulty: 3.5 },
+        { id: 'xx1-ch2-s3', name: '第3节 神经冲动的产生和传导', difficulty: 5 },
+        { id: 'xx1-ch2-s4', name: '第4节 神经系统的分级调节', difficulty: 4 },
+        { id: 'xx1-ch2-s5', name: '第5节 人脑的高级功能', difficulty: 3.5 }
+      ]},
+      { id: 'xx1-ch3', name: '第3章 体液调节', difficulty: 4, children: [
+        { id: 'xx1-ch3-s1', name: '第1节 激素与内分泌系统', difficulty: 3.5 },
+        { id: 'xx1-ch3-s2', name: '第2节 激素调节的过程', difficulty: 4.5 },
+        { id: 'xx1-ch3-s3', name: '第3节 体液调节与神经调节的关系', difficulty: 4 }
+      ]},
+      { id: 'xx1-ch4', name: '第4章 免疫调节', difficulty: 4, children: [
+        { id: 'xx1-ch4-s1', name: '第1节 免疫系统的组成和功能', difficulty: 3.5 },
+        { id: 'xx1-ch4-s2', name: '第2节 特异性免疫', difficulty: 4.5 },
+        { id: 'xx1-ch4-s3', name: '第3节 免疫失调', difficulty: 3 },
+        { id: 'xx1-ch4-s4', name: '第4节 免疫学的应用', difficulty: 3 }
+      ]},
+      { id: 'xx1-ch5', name: '第5章 植物生命活动的调节', difficulty: 4, children: [
+        { id: 'xx1-ch5-s1', name: '第1节 植物生长素', difficulty: 4 },
+        { id: 'xx1-ch5-s2', name: '第2节 其他植物激素', difficulty: 3.5 },
+        { id: 'xx1-ch5-s3', name: '第3节 植物生长调节剂的应用', difficulty: 3.5 },
+        { id: 'xx1-ch5-s4', name: '第4节 环境因素参与调节植物的生命活动', difficulty: 3.5 }
+      ]}
+    ]},
+    /* ---------- 选择性必修二《生物与环境》：4 章 14 节 ---------- */
+    { id: 'xx2', name: '选择性必修二 · 生物与环境', difficulty: 3.5, children: [
+      { id: 'xx2-ch1', name: '第1章 种群及其动态', difficulty: 3.5, children: [
+        { id: 'xx2-ch1-s1', name: '第1节 种群的数量特征', difficulty: 3 },
+        { id: 'xx2-ch1-s2', name: '第2节 种群数量的变化', difficulty: 4.5 },
+        { id: 'xx2-ch1-s3', name: '第3节 影响种群数量变化的因素', difficulty: 3.5 }
+      ]},
+      { id: 'xx2-ch2', name: '第2章 群落及其演替', difficulty: 3.5, children: [
+        { id: 'xx2-ch2-s1', name: '第1节 群落的结构', difficulty: 4 },
+        { id: 'xx2-ch2-s2', name: '第2节 群落的主要类型', difficulty: 2.5 },
+        { id: 'xx2-ch2-s3', name: '第3节 群落的演替', difficulty: 3.5 }
+      ]},
+      { id: 'xx2-ch3', name: '第3章 生态系统及其稳定性', difficulty: 4, children: [
+        { id: 'xx2-ch3-s1', name: '第1节 生态系统的结构', difficulty: 3.5 },
+        { id: 'xx2-ch3-s2', name: '第2节 生态系统的能量流动', difficulty: 5 },
+        { id: 'xx2-ch3-s3', name: '第3节 生态系统的物质循环', difficulty: 4 },
+        { id: 'xx2-ch3-s4', name: '第4节 生态系统的信息传递', difficulty: 3 },
+        { id: 'xx2-ch3-s5', name: '第5节 生态系统的稳定性', difficulty: 3.5 }
+      ]},
+      { id: 'xx2-ch4', name: '第4章 人与环境', difficulty: 3, children: [
+        { id: 'xx2-ch4-s1', name: '第1节 人类活动对生态环境的影响', difficulty: 2.5 },
+        { id: 'xx2-ch4-s2', name: '第2节 生物多样性及其保护', difficulty: 3 },
+        { id: 'xx2-ch4-s3', name: '第3节 生态工程', difficulty: 3.5 }
+      ]}
+    ]},
+    /* ---------- 选择性必修三《生物技术与工程》：4 章 13 节 ---------- */
+    { id: 'xx3', name: '选择性必修三 · 生物技术与工程', difficulty: 4, children: [
+      { id: 'xx3-ch1', name: '第1章 发酵工程', difficulty: 3.5, children: [
+        { id: 'xx3-ch1-s1', name: '第1节 传统发酵技术的应用', difficulty: 3 },
+        { id: 'xx3-ch1-s2', name: '第2节 微生物的培养技术及应用', difficulty: 4.5 },
+        { id: 'xx3-ch1-s3', name: '第3节 发酵工程及其应用', difficulty: 3.5 }
+      ]},
+      { id: 'xx3-ch2', name: '第2章 细胞工程', difficulty: 4, children: [
+        { id: 'xx3-ch2-s1', name: '第1节 植物细胞工程', difficulty: 4 },
+        { id: 'xx3-ch2-s2', name: '第2节 动物细胞工程', difficulty: 4.5 },
+        { id: 'xx3-ch2-s3', name: '第3节 胚胎工程', difficulty: 4 }
+      ]},
+      { id: 'xx3-ch3', name: '第3章 基因工程', difficulty: 4.5, children: [
+        { id: 'xx3-ch3-s1', name: '第1节 重组DNA技术的基本工具', difficulty: 4.5 },
+        { id: 'xx3-ch3-s2', name: '第2节 基因工程的基本操作程序', difficulty: 5 },
+        { id: 'xx3-ch3-s3', name: '第3节 基因工程的应用', difficulty: 3.5 },
+        { id: 'xx3-ch3-s4', name: '第4节 蛋白质工程的原理和应用', difficulty: 4 }
+      ]},
+      { id: 'xx3-ch4', name: '第4章 生物技术的安全性与伦理问题', difficulty: 2.5, children: [
+        { id: 'xx3-ch4-s1', name: '第1节 转基因产品的安全性', difficulty: 2.5 },
+        { id: 'xx3-ch4-s2', name: '第2节 关注生殖性克隆人', difficulty: 2.5 },
+        { id: 'xx3-ch4-s3', name: '第3节 禁止生物武器', difficulty: 2 }
       ]}
     ]}
   ]
@@ -1774,14 +1907,18 @@ $('vaultReviewBtn').onclick = startReview;
 renderVaultBadge();
 
 /* ================= 生物知识地图（功能 1 + 功能 2） =================
-   树状图：生物 → 必修一 → 章 → 节，点节点逐层展开。
+   树状图：生物 → 五本教材（必修1/2、选择性必修1/2/3）→ 章 → 节，点节点逐层展开。
+   节点 id 规则见文件前段「生物知识地图：静态数据」的注释。
    每个节点三件事：复习（看这个节点下的疑问）/ 提问（把接下来的问题挂到该节点）/
    随机抽查（从该节点下的疑问里随机抽一条，直接进复习卡片流程）。
    星级：学习难度（AI 预置、可改）+ 掌握程度（自动聚合、可改），都支持半星。
    ------------------------------------------------------------------ */
 const mapEl = $('mapPanel'), mapBody = $('mapBody');
 
-let expanded = new Set(['bio', 'bx1']);   // 已展开的节点
+/* 默认只展开「生物」这一层，五本教材各自收成一行 ——
+   五本书一共 113 个节点，一打开就全展开要白画一百多行 DOM，没必要。
+   想看全展开：「全部展开」按钮，或 ?demo=map&expand=all。 */
+let expanded = new Set(['bio']);   // 已展开的节点
 let selNodeId = null;                     // 当前选中的节点（选中才显示星级与操作）
 let mapSubNodeId = null;                  // 「复习」子视图：正在看哪个节点下的疑问
 let currentNodeId = null;                 // 提问绑定：之后入库的疑问自动带这个 nodeId
@@ -2054,7 +2191,7 @@ $('tbMap').onclick = () => { closeRadial(); closeVault(); openMap(); };
 $('mapClose').onclick = closeMap;
 $('mapAllBtn').onclick = () => {
   const allOpen = Object.keys(NODE_INDEX).every(id => expanded.has(id));
-  if (allOpen) { expanded = new Set(['bio', 'bx1']); $('mapAllBtn').textContent = '全部展开'; }
+  if (allOpen) { expanded = new Set(['bio']); $('mapAllBtn').textContent = '全部展开'; }
   else { expanded = new Set(Object.keys(NODE_INDEX)); $('mapAllBtn').textContent = '收起一些'; }
   renderMap();
 };
@@ -3038,8 +3175,9 @@ if (demo === 'map') {
     if (p.get('expand') === 'all') {
       expanded = new Set(Object.keys(NODE_INDEX));
     } else {
-      expanded = new Set(['bio', 'bx1']);
-      childrenOf('bx1').forEach(c => expanded.add(c.id));   // 展开到「章」
+      // 默认展开「生物」+ 五本教材这一层：录视频 / 截图时五本书的目录骨架一屏看完，
+      // 但又不会把 82 个「节」全铺开（那个交给 &expand=all）
+      expanded = new Set(['bio', 'bx1', 'bx2', 'xx1', 'xx2', 'xx3']);
     }
     const sel = p.get('sel');
     openMap(sel && nodeById(sel) ? sel : 'bx1-ch1');
