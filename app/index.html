@@ -397,6 +397,9 @@ body{
 .map-legend .dim{color:#8a7562}
 .map-legend .btn{margin-top:6px}
 .lg-table{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px;display:flex;gap:18px;flex-wrap:wrap}
+/* 必须显式声明：上面的 display:flex 是作者样式，会盖掉 hidden 属性的浏览器默认 display:none，
+   导致「完整星级说明」收不起来（点按钮看着没反应）。 */
+.lg-table[hidden]{display:none}
 .lg-col{flex:1;min-width:190px}
 .lg-h{color:var(--amber);letter-spacing:1px;margin-bottom:4px}
 .lg-r{display:flex;gap:8px;line-height:1.75}
