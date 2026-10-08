@@ -479,6 +479,85 @@ body{
 .guide-hint{font-size:11.5px;color:var(--cream-dim);text-align:center;line-height:1.7}
 .chk{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--cream-dim);cursor:pointer}
 .chk input{width:15px;height:15px;accent-color:var(--amber);cursor:pointer}
+
+/* ============ 知识考察（出题 / 判分 / 历史回看 / 三层补救） ============
+   与既有面板同一套像素风：方角、2px 实线边框、硬阴影、暖色，不用圆角与模糊。
+   ------------------------------------------------------------------ */
+.exam-wrap{display:flex;flex-direction:column;gap:10px}
+.exam-hd{display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+.exam-hd .t{flex:1;font-size:12px;color:var(--amber);line-height:1.5}
+.exam-note{
+  border:2px solid var(--line);background:rgba(20,14,11,.5);
+  padding:9px 11px;font-size:11.5px;line-height:1.85;color:var(--cream-dim);
+}
+.exam-note b{color:var(--amber);font-weight:600}
+.exam-note .big{font-size:13px;color:var(--cream)}
+.exam-note .big b{font-size:15px}
+.st-badge{
+  display:inline-block;font-size:11px;padding:1px 7px;white-space:nowrap;
+  border:1px solid var(--line-2);color:var(--cream-dim);
+}
+.st-badge.normal{color:var(--ok);border-color:var(--ok);background:rgba(143,191,106,.12)}
+.st-badge.review{color:var(--amber);border-color:var(--amber-dim);background:rgba(255,200,97,.14)}
+.st-badge.bad{color:#e07a5f;border-color:#e07a5f;background:rgba(224,122,95,.14)}
+.star-note b{color:var(--amber)}
+.exam-ops{display:flex;gap:6px;flex-wrap:wrap}
+.exam-bar{
+  border:2px dashed var(--line-2);background:rgba(0,0,0,.28);
+  padding:9px 11px;font-size:12px;line-height:1.7;color:var(--amber);
+}
+.exam-q{border:2px solid var(--line);background:rgba(20,14,11,.45);padding:10px 12px}
+.exam-q .qh{display:flex;align-items:center;gap:7px;margin-bottom:6px;font-size:11px;color:var(--cream-dim);flex-wrap:wrap}
+.exam-q .qt{font-size:13px;line-height:1.7;color:var(--cream);margin-bottom:8px;word-break:break-word}
+.exam-q textarea{
+  width:100%;height:56px;resize:none;background:rgba(20,14,11,.6);
+  border:2px solid var(--line);color:var(--cream);padding:8px 9px;
+  font-size:13px;font-family:inherit;outline:none;line-height:1.5;
+}
+.exam-q textarea:focus{border-color:var(--amber-dim)}
+.exam-q .qacts{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.exam-q .qacts .tip{font-size:11px;color:var(--cream-dim)}
+.exam-judge{margin-top:8px;padding:8px 10px;border:2px solid var(--line);font-size:12.5px;line-height:1.7}
+.exam-judge.right{border-color:var(--ok);background:rgba(143,191,106,.12)}
+.exam-judge.partial{border-color:var(--amber-dim);background:rgba(255,200,97,.12)}
+.exam-judge.wrong{border-color:#e07a5f;background:rgba(224,122,95,.12)}
+/* 判不出来 / 解析失败 → 显式跳过：虚线中性色，不写成「错了」 */
+.exam-judge.skip{border-style:dashed;border-color:var(--line-2);background:rgba(0,0,0,.25);color:var(--cream-dim)}
+.exam-ref{
+  margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);
+  font-size:12px;color:var(--cream-dim);line-height:1.7;word-break:break-word;
+}
+.exam-ref b{color:var(--amber-dim)}
+.exam-ref .ex{color:var(--ok)}
+.exam-ref.done{border-top:none;margin-top:4px;padding-top:0}
+.exam-sum{
+  border:2px solid var(--amber-dim);background:rgba(255,200,97,.08);
+  padding:10px 12px;font-size:12.5px;line-height:1.85;
+}
+.exam-sum b{color:var(--amber)}
+.exam-sum .weak{color:#e8b48a}
+.exam-hist-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.exam-hist-hd .tip{font-size:11px;color:var(--cream-dim)}
+.exam-hist-list{display:flex;flex-direction:column;gap:8px;margin-top:9px}
+.exam-hist{
+  border:2px solid var(--line);background:rgba(0,0,0,.22);
+  padding:8px 10px;cursor:pointer;transition:border-color .12s,background .12s;
+}
+.exam-hist:hover{border-color:var(--line-2);background:rgba(255,200,97,.06)}
+.exam-hist .ht{font-size:12.5px;line-height:1.65;color:var(--cream);word-break:break-word}
+.exam-hist .hm{display:flex;gap:9px;flex-wrap:wrap;font-size:10.5px;color:var(--cream-dim);margin-top:5px;align-items:center}
+.exam-hist .hm .tag{border:1px solid var(--line-2);padding:0 4px;color:var(--cream-dim)}
+.exam-hist .hm .tag.ok{color:var(--ok);border-color:var(--ok);background:rgba(143,191,106,.12)}
+.exam-hist .hm .tag.half{color:var(--amber-dim);border-color:var(--amber-dim);background:rgba(255,200,97,.12)}
+.exam-hist .hm .tag.no{color:#e07a5f;border-color:#e07a5f;background:rgba(224,122,95,.14)}
+.exam-hist .hm .tag.sk{color:#8a7562;border-style:dashed}
+.exam-hist .hm .open-mark{margin-left:auto;color:var(--amber)}
+.exam-hist-body{margin-top:8px;padding-top:8px;border-top:2px solid var(--line)}
+/* 三层补救的分层提示条 */
+.exam-layer{border:2px solid var(--amber-dim);background:rgba(255,200,97,.07);padding:9px 11px;font-size:12px;line-height:1.8}
+.exam-layer b{color:var(--amber)}
+.exam-layer.l3{border-color:#e07a5f;background:rgba(224,122,95,.10)}
+.exam-layer.l3 b{color:#e8b48a}
 </style>
 </head>
 <body>
@@ -920,8 +999,16 @@ const effDiff = id => {
   const n = nodeById(id);
   return (n && typeof n.difficulty === 'number') ? n.difficulty : 3;
 };
-/* 学生改过 → 用学生值；没改过 → 用自动聚合（拿不到就是 null = 未评） */
-const effMast = id => (typeof nodeMastManual[id] === 'number') ? nodeMastManual[id] : autoNodeMastery(id);
+/* 学生改过 → 用学生值（手动永远最优先）；
+   没改过 → 优先用「知识考察」链路算出的值（它已经把自动聚合当成基线再叠加考察影响，
+   见文件后段 examMasteryScore() 与 EXAM_MASTERY 规则）；
+   这个节点一次都没考过 → 回落到疑问库自动聚合（拿不到就是 null = 未评）。
+   examMasteryStars 是函数声明，会被提升，所以这里可以先引用后定义。 */
+const effMast = id => {
+  if (typeof nodeMastManual[id] === 'number') return nodeMastManual[id];
+  const ex = examMasteryStars(id);
+  return ex != null ? ex : autoNodeMastery(id);
+};
 
 /* ================= 分学科独立会话（解决上下文污染） =================
    以前只有一个全局数组 history：问生物之前如果聊了数学，最近 16 条里夹着
@@ -1480,7 +1567,8 @@ function questionCardHTML(q) {
     </div>`;
 }
 
-/* 把一串疑问送进复习卡片流程 ——「开始复习」和知识地图的「随机抽查」共用它 */
+/* 把一串疑问送进复习卡片流程（疑问库的「开始复习」用它）。
+   「📖 复习」= 用自己的话复述；知识地图节点上的「📝 知识考察」是另一套流程，不走这里。 */
 function beginReview(list) {
   if (!list || !list.length) return;
   vaultEl.classList.add('open');
@@ -1719,6 +1807,7 @@ function starPanelHTML(id) {
   const d = effDiff(id);
   const m = effMast(id);
   const auto = autoNodeMastery(id);
+  const examScore = examMasteryScore(id);      // 有考察记录时，掌握度里已经叠加了考察的影响
   const manual = typeof nodeMastManual[id] === 'number';
   const all = questionsOfNode(id);
   const reviewed = all.filter(q => (q.reviews || []).length > 0).length;
@@ -1733,19 +1822,33 @@ function starPanelHTML(id) {
       <span class="k">掌握程度</span>
       ${starsHTML(id, 'mast', mVal)}
       <span class="v">${m == null ? '未评（还没复习过，也可以直接点星星自己评）' : m + '★ · ' + esc(starText('mastery', m))}</span>
+      ${examScore != null ? '<span class="v">（含知识考察）</span>' : ''}
       ${manual ? `<button class="btn sm ghost" data-act="star-reset" data-node="${id}" title="改回自动聚合值">↺ 恢复自动</button>` : ''}
     </div>
     <div class="star-note">${
       all.length
         ? `这个节点（含子节点）下有 ${all.length} 条疑问，其中 ${reviewed} 条复习过${auto != null ? `，自动聚合建议 ${auto}★` : '，复习过之后这里会自动出分'}。难度可以改，掌握度以你手动改过的为准。`
-        : '这里还没有疑问，先问一个吧。'
+        : '这里还没有疑问，先问一个吧 —— 也可以直接用「📝 知识考察」出题考自己。'
     }</div>
+    ${examPanelLine(id)}
     <div class="map-ops">
       <button class="btn sm" data-act="node-review" data-node="${id}">📖 复习</button>
       <button class="btn sm" data-act="node-ask" data-node="${id}">💬 提问</button>
-      <button class="btn sm" data-act="node-quiz" data-node="${id}">🎲 随机抽查</button>
+      <button class="btn sm" data-act="node-exam" data-node="${id}" title="AI 现场出 5 道题考这个知识点">📝 知识考察</button>
+      ${examStateOf(id).open ? `<button class="btn sm" data-act="node-exam" data-node="${id}" data-remedy="1" title="错误率偏高，往下补一层">🩹 再次学习</button>` : ''}
     </div>
   </div>`;
+}
+
+/* 节点面板上的一行「考察状态」：一次都没考过就不显示，免得占地方 */
+function examPanelLine(id) {
+  const st = examStateOf(id);
+  if (st.key === 'none') return '';
+  const stars = examMasteryStars(id);
+  return `<div class="star-note">考察：知识点错误率 <b>${st.err == null ? '—' : st.err + '%'}</b>
+    <span class="st-badge ${stCls(st.key)}">${esc(st.label)}</span>
+    · 已考 ${st.recs} 次 / 共 ${countExamQuestions(id)} 道题${stars != null ? ` · 掌握度 ${stars}★` : ''}
+    <br>阈值：错误率 ≤20% 正常；&gt;20% 需复习；&gt;50% 未掌握</div>`;
 }
 
 /* ---------- 树 ---------- */
@@ -1787,15 +1890,23 @@ function subViewHTML(id) {
 /* ---------- 渲染 / 开合 ---------- */
 function renderMap() {
   if (!mapBody) return;
-  mapBody.innerHTML = mapSubNodeId ? subViewHTML(mapSubNodeId) : treeHTML(BIO_TREE.id);
+  // 考察面板优先占用整个地图区（它和「某节点下的疑问」子视图互斥）
+  if (examViewId) {
+    mapBody.innerHTML = examViewHTML(examViewId);
+  } else {
+    mapBody.innerHTML = mapSubNodeId ? subViewHTML(mapSubNodeId) : treeHTML(BIO_TREE.id);
+  }
   const n = vault.filter(q => asText(q.nodeId) && nodeById(asText(q.nodeId))).length;
-  $('mapCnt').textContent = `${vault.length} 条疑问 · ${n} 条已挂到章节`;
+  const ex = examTotalCount();
+  $('mapCnt').textContent = `${vault.length} 条疑问 · ${n} 条已挂到章节` + (ex ? ` · ${ex} 道考察题` : '');
 }
 
 function openMap(focusId) {
   mapEl.classList.add('open');
   sidebar.classList.remove('open');   // 两块面板都贴在右边，避免叠在一起
   mapSubNodeId = null;
+  examViewId = null;                  // 从入口打开地图 → 先回到树视图
+  examSession = null;
   if (focusId && nodeById(focusId)) {
     selNodeId = focusId;
     // 选中节点的所有祖先必须先展开，否则它自己根本看不见
@@ -1832,13 +1943,12 @@ function askFromNode(id) {
   toast('已绑定「' + n.name + '」，接下来问的会挂到这里');
 }
 
-/* 随机抽查：从该节点（含子节点）下的疑问里随机抽一条，直接进复习卡片 */
-function quizNode(id) {
-  const list = questionsOfNode(id);
-  if (!list.length) { toast('这里还没有疑问，先问一个吧'); return; }
-  const pick = list[Math.floor(Math.random() * list.length)];
-  closeMap();
-  beginReview([pick]);
+/* 知识考察入口：打开考察面板；remedy = true 表示从「🩹 再次学习」进来，直接开始第一层补救 */
+function enterExamNode(id, remedy) {
+  const n = nodeById(id);
+  if (!n) return;
+  openExamView(id);                               // 先渲染面板（已有历史立刻可见）
+  beginExamRound(id, remedy ? 'l1' : 'exam');     // 再现场出题：考察 5 道 / 补救 2 道
 }
 
 /* 手动改星级：难度覆盖 AI 预置值，掌握度覆盖自动聚合值，两者都持久化 */
@@ -1876,7 +1986,19 @@ mapBody.addEventListener('click', e => {
   }
   if (act === 'node-review') { mapSubNodeId = nid; renderMap(); return; }
   if (act === 'node-ask') { askFromNode(nid); return; }
-  if (act === 'node-quiz') { quizNode(nid); return; }
+  if (act === 'node-exam') { enterExamNode(nid, btn.dataset.remedy === '1'); return; }
+  /* ↓ 知识考察面板里的动作（面板同样整块重绘，所以都走这里的委托） */
+  if (act === 'exam-back') { examViewId = null; examSession = null; renderMap(); return; }
+  if (act === 'exam-new') { beginExamRound(nid, 'exam'); return; }
+  if (act === 'exam-history') { toggleExamHistory(); return; }
+  if (act === 'exam-histopen') { toggleExamHistItem(btn.dataset.key); return; }
+  if (act === 'exam-submit') { submitExamAnswer(nid, btn.dataset.rec, Number(btn.dataset.i)); return; }
+  if (act === 'exam-remedy') { beginExamRound(nid, 'l1'); return; }
+  if (act === 'exam-layer') { beginExamRound(nid, btn.dataset.stage === '2' ? 'l2' : 'l1'); return; }
+  if (act === 'exam-layer3') { enterRemedy3(nid); return; }
+  if (act === 'exam-tutor') { tutorOneClick(nid, btn.dataset.rec, Number(btn.dataset.i)); return; }
+  if (act === 'exam-follow') { followUpClick(nid, btn.dataset.rec); return; }
+  if (act === 'exam-finish') { finishRemedy(nid, btn.dataset.rec); return; }
   if (act === 'star-reset') {
     delete nodeMastManual[nid];
     LS.set('study_map_mastery', nodeMastManual);
@@ -1950,6 +2072,950 @@ function renderSbContext() {
 }
 renderSbContext();
 
+/* ================= 知识考察（节点出题考试 / 错误率状态 / 三层补救） =================
+   它替换了原来知识地图节点上的「🎲 随机抽查」：
+     原来：从该节点下的疑问里随机抽一条 → 进复述流程（和「📖 复习」定位重复）
+     现在：AI 现场出题（填空 / 概念简答）→ 学生逐题作答 → 逐题判分 → 算错误率 → 永久存档
+   「📖 复习」（复述机制）一行没动，两套流程并存：
+     📖 复习    = 用自己的话把知识讲一遍（费曼式复述，题目来自疑问库）
+     📝 知识考察 = 现场出题考自己，考完能回看每一道旧题和当时的评语
+   数据：study_exams = { <知识树节点id>: [ 考察记录 ] }，全部存本地 localStorage。
+   --------------------------------------------------------------------------------- */
+
+/* ---------- 提示词（每一段都独立成常量，方便单独调参） ---------- */
+
+/* 出题规则（EXAM_RULE）。设计意图：
+   ① 只考这个知识点本身 + 它直接依赖的最基础概念，不出偏题怪题；
+   ② 题型由模型自己在 fill / qa 里挑 —— 有的点适合填一个名词（「光反应的场所是____」），
+      有的点适合说清一个区别（「光反应和暗反应的区别」），强行统一题型会失真；
+   ③ refAnswer 必须短、准、能直接对照判分（判分是「一次一题」单独调用的，答案含糊就没法判）；
+   ④ 补救层要往「更底层」挖，靠 REMEDY_HINT 追加要求，不需要另写一套出题提示词。 */
+const EXAM_RULE = `你是高中生物的命题老师。请针对给定的知识点，现场出题考察学生。
+
+【出题要求】
+- 只考这个知识点本身，以及它直接依赖的最基础概念；不要出偏题、怪题、超纲题。
+- 每题自己决定题型，在 type 字段里写明（两种题型都要有可能用到）：
+  - "fill" 填空题：答案必须是 1~8 个字（一个名词 / 一个数字 / 一个是非判断），例如「光反应的场所是____。」
+  - "qa" 概念简答题：问「为什么 / 区别是什么 / 作用是什么」，参考答案 1~3 句话、不超过 60 字。
+- 各题之间不要考同一个点，要有覆盖面；难度按高中基础题给。
+- refAnswer 必须准确、简短，能直接拿来对照学生答案判分。
+- 题干里不要泄露答案。
+
+【输出格式】只输出一行合法 JSON，用 <exam> 包裹；不要用代码块，不要输出任何别的文字：
+<exam>{"questions":[{"q":"题干","type":"fill","refAnswer":"参考答案"}]}</exam>`;
+
+/* 第一层 / 第二层补救的追加要求：往「更底层、更相关」挖，而不是把原题再考一遍。
+   例：原知识点是「光合作用与能量转化」没懂 → 考「叶绿体的结构」「光反应和暗反应的区别」。 */
+const REMEDY_HINT = {
+  l1: '【补救·第一层】学生这次没考好。请把题往「上游 / 更基础」的方向挖：考这个知识点直接依赖的前置概念、结构、条件或反应式。例如原知识点是「光合作用与能量转化」，就考「叶绿体里有哪些结构」「光反应和暗反应分别在哪里进行」这类更底层的问题。',
+  l2: '【补救·第二层】上一轮更基础的题学生还是答错了。请再换一个角度往下挖：考它最核心的定义、必要条件、物质或能量的去向。不要重复上一轮的题，也不要出原题。'
+};
+
+/* 判分规则（EXAM_JUDGE_RULE）。设计意图：
+   ① 一次只判一道题，结论必须能换算成错误率 → 强制模型给 accuracy（0-100 的「答得有多准」）；
+   ② verdict 只是三档口径标签，数值来源是 accuracy：
+      单题错误率 = 100 - accuracy ——「对 = 0% / 部分对 = 50% / 错 = 100%」正好落在这个口径上；
+   ③ 明确禁止「语气自信 / 字数多 / 态度好」加分，避免分数虚高。 */
+const EXAM_JUDGE_RULE = `你是高中生物的阅卷老师，请判定学生对这一道题的作答。
+
+【给分口径】
+- accuracy：学生答得有多准，0~100 的整数。
+  完全正确且答到关键词 = 100；方向对但漏了关键点 = 40~80；答错、答反、答非所问 = 0~30。
+- verdict 三档：right（对，accuracy ≥ 85）/ partial（部分对，45 ≤ accuracy < 85）/ wrong（错，accuracy < 45）。
+- 填空题只按「填进来的内容对不对」判：写错别字但意思清楚可以算对；写了两个答案、其中一个对算部分对。
+- 简答题讲清了核心因果才算对；只蹦出一个名词、答非所问、说反了，都要压到 partial 或 wrong。
+- 学生写「不会」「不知道」「忘了」= accuracy 0。
+- 不要因为语气自信、字数多、态度好就加分；宁严勿松。
+
+【字段】comment = 一句给学生的评语（20 字以内，友好、具体，指出对在哪或错在哪）。
+【输出格式】只输出一行合法 JSON，用 <judge> 包裹，不要代码块：
+<judge>{"accuracy":85,"verdict":"right","comment":"抓住了光反应的场所"}</judge>`;
+
+/* 错题诊断规则（EXAM_ANALYSIS_RULE）。两处用它：
+   ① 主动考察后说清「学生具体哪里没掌握」；② 第三层补救时给每题答案与解析。
+   设计意图：错误率只回答「错了多少」，学生更需要「我到底哪儿没掌握」。
+   提示词里写死「不许出题、不许要求学生作答」—— 第三层的产品规则就是「不再出新题」，
+   靠「提示词约束 + 代码里不给 l3 渲染任何输入框」双重保证。 */
+const EXAM_ANALYSIS_RULE = `你是高中生物老师，正在做错题诊断。只做两件事，绝对不要出新的题目、不要提问、不要要求学生再作答。
+
+1. weakness：用一句话说清学生「具体哪里没掌握」。要指向底层的概念、结构或能力（例如「把光反应和暗反应的场所弄反了」），不要只说「基础不牢」「没学好」。
+2. items：给每一道列出的题一段解析：正确答案为什么是这个、学生刚才错在哪一步。每段 60 字以内，说人话。
+
+【输出格式】只输出一行合法 JSON，用 <analysis> 包裹，不要代码块：
+<analysis>{"weakness":"…","items":[{"i":1,"explanation":"…"}]}</analysis>
+items 里的 i 是题目序号（从 1 开始，与上面列出的题号一致），只给答错或答得不完整的题。`;
+
+/* 「只讲这一道题」的规则（EXAM_TUTOR_RULE）。第三层里学生点「📖 学习」时用它。
+   设计意图：第三层不再出新题。学生点「学习」的意图是「我现在只想知道这道题怎么回事」，
+   所以只讲这一道；并且禁止它出题、反问、要求复述 —— 否则又会变回一次考试，违背第三层的设计。 */
+const EXAM_TUTOR_RULE = `你是高中生物老师。学生点开了一道具体的题目，请只讲这一道题。
+
+【只做这些】
+- 先给答案（准确、简短）。
+- 再讲「为什么是这个答案」：把用到的概念、结构、条件讲清楚。
+- 如果学生刚才答错了，指出他错在哪一步。
+- 最后给一句「下次遇到同类题怎么想」。
+
+【禁止】不要出题、不要反问、不要要求学生复述、不要扩展到别的知识点。
+用口语回答，5 句话以内，不要用 Markdown 标题。`;
+
+/* ---------- 掌握度叠加规则（要调数值就改这里） ----------
+   设计意图：奖励「主动去考」，不奖励「等着被纠错」。
+     · 主动点「📝 知识考察」并且考得好 → 大幅提升（这才是正反馈）；
+     · 考察答错 → 降低；
+     · 错了之后走补救流程（被动纠错）→ 只能缓慢爬，而且有硬上限，不会很高。
+   单位是百分制掌握度（0-100），最后 ÷20 换算成 0-5 星。
+   下面是「每次」的增量，累积由 examMasteryScore() 按记录的时间顺序算出来。 */
+const EXAM_MASTERY = {
+  ACTIVE_HIGH: 15,      // 主动考察、本次正确率 ≥80% → +15 分（大幅提升）
+  ACTIVE_MID: 6,        // 主动考察、正确率 50%~80% → +6 分（小步提升）
+  ACTIVE_LOW: -10,      // 主动考察、正确率 <50%（答错）→ -10 分（考察答错要降）
+  PASSIVE_STEP: 2,      // 被动纠错：每走完一层补救 → +2 分（缓慢）
+  PASSIVE_CAP: 20,      // 被动纠错累计最多 +20 分（10 层封顶，再多也不加）
+  PASSIVE_CEILING: 60   // 整条链上没靠主动考察提分时，掌握度最高 60 分（=3★）——「不会很高」
+};
+
+/* ---------- 存储 ----------
+   study_exams = { '<知识树节点id>': [ 考察记录 ] }
+   一条考察记录 = 一次考察留下的完整证据链：
+   { id, at, mode:'exam'|'l1'|'l2'|'l3',
+     questions:[{ q, type:'fill'|'qa', refAnswer, studentAnswer,
+                  accuracy, errorRate, verdict, comment, judged, skipWhy, explanation, tutor, at }],
+     errorRate,   // 本次考察的错误率（只算判定成功的题；一道都没判出来 = null）
+     level,       // 本次考察后的状态：normal / needReview / unmastered
+     weakness,    // AI 说的「学生具体哪里没掌握」
+     remedyEnd,   // 'passed' 本层达标收工；'mastered' 走到第三层讲解后标记已掌握
+     followUps }  // 第三层里学生自主追问的问答（系统不自动出题）
+   mode：exam = 学生主动点的知识考察；l1/l2 = 第一/二层补救（挖更底层的题）；
+         l3 = 第三层补救（不再出新题，只给答案与解析）。
+   旧数据 / 缺字段一律按空处理，不会崩。 */
+const EXAM_KEY = 'study_exams';
+const EXAM_MODES = ['exam', 'l1', 'l2', 'l3'];
+const EXAM_Q_COUNT = 5;      // 一次知识考察出几道题
+const REMEDY_Q_COUNT = 2;    // 一层补救出几道题
+
+let exams = LS.get(EXAM_KEY, {});
+if (!exams || typeof exams !== 'object' || Array.isArray(exams)) exams = {};
+
+/* verdict 兜底：模型乱填就按 accuracy 反推三档，保证 verdict 永远是三档之一 */
+function normVerdict(v, acc) {
+  const s = asText(v).toLowerCase();
+  if (s === 'right' || s === 'partial' || s === 'wrong') return s;
+  return acc >= 85 ? 'right' : acc >= 45 ? 'partial' : 'wrong';
+}
+
+/* 题目归一化：认不出的字段一律清成安全值（旧数据没有这些字段也不会崩） */
+function normExamQ(q) {
+  const src = (q && typeof q === 'object' && !Array.isArray(q)) ? q : {};
+  const acc = Number(src.accuracy);
+  const hasAcc = src.judged === true && isFinite(acc);
+  const accuracy = hasAcc ? Math.max(0, Math.min(100, Math.round(acc))) : null;
+  return {
+    q: asText(src.q),
+    type: asText(src.type).toLowerCase() === 'fill' ? 'fill' : 'qa',
+    refAnswer: asText(src.refAnswer),
+    studentAnswer: asText(src.studentAnswer),
+    judged: hasAcc,
+    accuracy,
+    errorRate: hasAcc ? 100 - accuracy : null,
+    verdict: hasAcc ? normVerdict(src.verdict, accuracy) : '',
+    comment: asText(src.comment),
+    skipWhy: asText(src.skipWhy),
+    explanation: asText(src.explanation),
+    tutor: asText(src.tutor),
+    at: Number(src.at) || 0
+  };
+}
+
+Object.keys(exams).forEach(k => {
+  const list = exams[k];
+  exams[k] = Array.isArray(list) ? list
+    .filter(r => r && typeof r === 'object' && !Array.isArray(r))
+    .map(r => {
+      const err = Number(r.errorRate);
+      return {
+        id: asText(r.id) || ('ex' + Math.random().toString(36).slice(2, 8)),
+        at: Number(r.at) || 0,
+        mode: EXAM_MODES.indexOf(asText(r.mode)) >= 0 ? asText(r.mode) : 'exam',
+        questions: Array.isArray(r.questions) ? r.questions.map(normExamQ).filter(q => q.q) : [],
+        errorRate: isFinite(err) ? Math.max(0, Math.min(100, Math.round(err))) : null,
+        level: asText(r.level),
+        weakness: asText(r.weakness),
+        remedyEnd: asText(r.remedyEnd),
+        followUps: Array.isArray(r.followUps)
+          ? r.followUps.map(x => ({ ask: asText(x && x.ask), answer: asText(x && x.answer) })).filter(x => x.answer)
+          : []
+      };
+    }) : [];
+});
+const saveExams = () => LS.set(EXAM_KEY, exams);
+
+const examRecords = nodeId => (Array.isArray(exams[nodeId]) ? exams[nodeId] : []);
+const findExamRec = (nodeId, recId) => examRecords(nodeId).find(r => r.id === recId) || null;
+const countExamQuestions = nodeId => examRecords(nodeId).reduce((s, r) => s + (r.questions || []).length, 0);
+const examTotalCount = () => Object.keys(exams).reduce((s, k) => s + countExamQuestions(k), 0);
+
+/* ---------- 错误率 ---------- */
+/* 单题错误率：判定成功才有值。对 = 0% / 部分对 = 50% / 错 = 100%；
+   模型给了 accuracy 就按「100 - accuracy」换算（同一口径，粒度更细）。 */
+const qErrorRate = q => (q && q.judged && q.errorRate != null) ? Number(q.errorRate) : null;
+
+/* 本次考察错误率 = 本次「判定成功」的题的平均错误率；一道都没判出来 → null（不猜、不当成 0） */
+function recordErrorRate(rec) {
+  if (!rec) return null;
+  const list = (rec.questions || []).map(qErrorRate).filter(v => v != null);
+  if (!list.length) return null;
+  return Math.round(list.reduce((s, v) => s + v, 0) / list.length);
+}
+
+/* 知识点错误率 = 该知识点「所有考过的题」的平均错误率（跨全部考察记录）。
+   只统计真正出过题的轮次（exam / l1 / l2）；l3 只是把旧错题拿出来讲，重复计入会让数字失真。 */
+function knowledgeErrorRate(nodeId) {
+  let sum = 0, n = 0;
+  examRecords(nodeId).forEach(r => {
+    if (r.mode === 'l3') return;
+    (r.questions || []).forEach(q => { const v = qErrorRate(q); if (v != null) { sum += v; n++; } });
+  });
+  return n ? Math.round(sum / n) : null;
+}
+
+/* 状态阈值：错误率 ≤20% 正常；>20% 需复习；>50% 未掌握 */
+function stateOfErrorRate(err) {
+  if (err == null) return { key: 'unknown', label: '暂无法判定' };
+  if (err > 50) return { key: 'unmastered', label: '未掌握' };
+  if (err > 20) return { key: 'needReview', label: '需复习' };
+  return { key: 'normal', label: '正常' };
+}
+const stCls = k => (k === 'normal' || k === 'mastered') ? 'normal'
+  : (k === 'needReview' ? 'review' : (k === 'unmastered' ? 'bad' : ''));
+
+/* 节点整体状态：只有「最近一轮是补救、而且已经走完第三层标记已掌握」时才覆盖错误率判定；
+   之后学生要是又主动考了一次，就按新的错误率重新判定。 */
+function examStateOf(nodeId) {
+  const recs = examRecords(nodeId);
+  if (!recs.length) return { key: 'none', label: '还没考过', err: null, recs: 0, open: false };
+  const err = knowledgeErrorRate(nodeId);
+  const last = recs[recs.length - 1];
+  const mastered = last.mode !== 'exam' && last.remedyEnd === 'mastered';
+  const st = mastered ? { key: 'mastered', label: '已掌握（已讲解）' } : stateOfErrorRate(err);
+  return {
+    key: st.key, label: st.label, err, recs: recs.length,
+    // 「再次学习」只在真的需要补救时出现（还没走完第三层讲解）
+    open: !mastered && (st.key === 'needReview' || st.key === 'unmastered')
+  };
+}
+
+/* ---------- 掌握度叠加（规则常量见上面 EXAM_MASTERY） ----------
+   以疑问库自动聚合值为基线，按时间顺序把每一次考察 / 每一层补救叠上去。
+   返回 null = 这个节点还没有「判定成功」的考察记录 → 掌握度不受考察影响（界面仍显示自动聚合值）。 */
+function examMasteryScore(nodeId) {
+  const recs = examRecords(nodeId);
+  if (!recs.length) return null;
+  const auto = autoNodeMastery(nodeId);
+  let score = auto == null ? 0 : auto * 20;      // 基线：疑问库自动聚合（0-5★ → 0-100 分）
+  let active = 0, passive = 0, touched = false;
+  recs.forEach(r => {
+    if (r.mode === 'exam') {
+      const err = recordErrorRate(r);
+      if (err == null) return;                   // 判不出来的考察不动掌握度（显式跳过）
+      touched = true;
+      const acc = 100 - err;
+      active += acc >= 80 ? EXAM_MASTERY.ACTIVE_HIGH
+              : acc >= 50 ? EXAM_MASTERY.ACTIVE_MID
+              : EXAM_MASTERY.ACTIVE_LOW;
+    } else {
+      // 被动纠错：一层补救走完（l1/l2 判过分）或第三层给了答案与解析 → +2
+      const done = r.mode === 'l3' ? true : recordErrorRate(r) != null;
+      if (done) { touched = true; passive += EXAM_MASTERY.PASSIVE_STEP; }
+    }
+  });
+  if (!touched) return null;
+  score += active + Math.min(passive, EXAM_MASTERY.PASSIVE_CAP);
+  // 光靠被动纠错爬 → 封顶 60 分（3★）：奖励主动，别让「被纠正」也能刷满
+  if (active <= 0) score = Math.min(score, EXAM_MASTERY.PASSIVE_CEILING);
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+/* 换算成界面用的星值（0.5~5，半星粒度）；没考过 → null */
+function examMasteryStars(nodeId) {
+  const s = examMasteryScore(nodeId);
+  if (s == null) return null;
+  return Math.max(0.5, Math.round(s / 20 * 2) / 2);
+}
+
+/* ---------- 调大模型：复用既有的 cfg()（地址已由 normalizeUrl 补全） ---------- */
+async function examCall(system, user) {
+  const c = cfg();
+  if (!c.configured) throw new Error('还没配置 API Key（点右上角 ⚙）');
+  const res = await fetch(c.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.key },
+    body: JSON.stringify({ model: c.model, messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user }
+    ] })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  return String(data?.choices?.[0]?.message?.content || '');
+}
+
+/* 从回复里抠出一个 JSON 对象；抠不出来返回 null。
+   本项目原则：解析失败要显式跳过，不静默降级 —— 所有调用方都必须处理 null。 */
+function pickJSON(raw, tag) {
+  const m = String(raw || '').match(new RegExp('<' + tag + '>([\\s\\S]*?)<\\/' + tag + '>', 'i'));
+  if (!m) return null;
+  let obj = null;
+  try { obj = JSON.parse(m[1].trim()); } catch (e) { obj = null; }
+  return (obj && typeof obj === 'object' && !Array.isArray(obj)) ? obj : null;
+}
+
+/* 现场出题。拿到题返回数组；解析失败 / 一道有效题都没有 → null（上层提示「已跳过」） */
+async function generateQuestions(nodeId, mode) {
+  const n = nodeById(nodeId);
+  const count = mode === 'exam' ? EXAM_Q_COUNT : REMEDY_Q_COUNT;
+  const raw = await examCall(EXAM_RULE,
+    `知识点：${n ? n.name : nodeId}（属于：${nodeLabel(nodeId)}）\n题量：${count} 道\n`
+    + (REMEDY_HINT[mode] || '')
+    + '\n现在请输出 <exam>{...}</exam>。');
+  const obj = pickJSON(raw, 'exam');
+  const list = (obj && Array.isArray(obj.questions)) ? obj.questions : null;
+  if (!list) return null;
+  const out = list.map(it => {
+    const src = (it && typeof it === 'object') ? it : {};
+    return {
+      q: asText(src.q),
+      type: asText(src.type).toLowerCase() === 'fill' ? 'fill' : 'qa',
+      refAnswer: asText(src.refAnswer || src.answer)
+    };
+  }).filter(x => x.q && x.refAnswer);      // 没有参考答案的题没法判分，直接丢掉
+  return out.length ? out.slice(0, count) : null;
+}
+
+/* 判一道题。返回 { accuracy, verdict, comment }；判不出来（解析失败 / 字段不合法）→ null */
+async function judgeOne(nodeId, q, ans) {
+  const n = nodeById(nodeId);
+  const raw = await examCall(EXAM_JUDGE_RULE,
+    `知识点：${n ? n.name : nodeId}\n题型：${q.type === 'fill' ? '填空' : '简答'}\n`
+    + `题目：${q.q}\n参考答案：${q.refAnswer}\n学生作答：${ans}\n\n请输出 <judge>{...}</judge>。`);
+  const r = pickJSON(raw, 'judge');
+  if (!r) return null;
+  const acc = Number(r.accuracy);
+  const hasAcc = isFinite(acc);
+  const v = asText(r.verdict).toLowerCase();
+  const hasV = (v === 'right' || v === 'partial' || v === 'wrong');
+  if (!hasAcc && !hasV) return null;      // 数值和三档标签都没给 → 判不出来，显式跳过
+  const accuracy = hasAcc ? Math.max(0, Math.min(100, Math.round(acc)))
+                          : (v === 'right' ? 100 : v === 'partial' ? 50 : 0);
+  return { accuracy, verdict: normVerdict(v, accuracy), comment: asText(r.comment) };
+}
+
+/* 错题诊断：说清「具体哪儿没掌握」+ 给每题一段解析。
+   pairs = [{ i, q }]，i 从 1 开始（跟模型报回来的 items[].i 对齐）。
+   解析失败 → 返回 null，调用方显式跳过（不写薄弱点，也不假装给了解析）。 */
+async function analyzeWrong(nodeId, pairs) {
+  if (!pairs || !pairs.length) return null;
+  const n = nodeById(nodeId);
+  const body = pairs.map(p => `第 ${p.i} 题（${p.q.type === 'fill' ? '填空' : '简答'}）：${p.q.q}\n`
+    + `参考答案：${p.q.refAnswer}\n学生作答：${p.q.studentAnswer || '（空）'}`).join('\n\n');
+  const raw = await examCall(EXAM_ANALYSIS_RULE,
+    `知识点：${n ? n.name : nodeId}\n\n${body}\n\n请输出 <analysis>{...}</analysis>。`);
+  const obj = pickJSON(raw, 'analysis');
+  if (!obj) return null;
+  const items = Array.isArray(obj.items) ? obj.items : [];
+  return {
+    weakness: asText(obj.weakness),
+    items: items.map(it => ({ i: Number(it && it.i) || 0, explanation: asText(it && it.explanation) }))
+  };
+}
+
+/* 「只讲这一道题」：自由文本，不做 JSON 解析（这里只要求它别出题，不要求结构化输出） */
+async function explainOne(nodeId, q, extra) {
+  const n = nodeById(nodeId);
+  const raw = await examCall(EXAM_TUTOR_RULE,
+    `知识点：${n ? n.name : nodeId}\n题目：${q.q}\n参考答案：${q.refAnswer}\n`
+    + `学生当时的作答：${q.studentAnswer || '（空）'}\n`
+    + (q.comment ? `AI 当时的评语：${q.comment}\n` : '')
+    + (extra ? `学生现在追问：${extra}\n` : '')
+    + '现在请只讲这一道题。');
+  return asText(raw);
+}
+
+/* ---------- 面板状态 ---------- */
+let examViewId = null;      // 正在看哪个知识点的考察面板（非空时地图区被考察面板占满）
+let examSession = null;     // { nodeId, recId, histOpen, openHistKey, notice }
+let examBusy = '';          // 非空 → 面板顶部显示「正在…（生成 / 判分 / 解析）」
+
+const modeLabel = m => m === 'exam' ? '主动考察'
+  : m === 'l1' ? '补救·第一层' : m === 'l2' ? '补救·第二层' : '补救·第三层';
+
+function dateText(ts) {
+  const d = new Date(Number(ts) || 0);
+  const p = x => String(x).padStart(2, '0');
+  return `${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/* 打开某知识点的考察面板（不自动出题；出题由「📝 知识考察」/「🩹 再次学习」触发）。
+   默认把「最近一次考察」装进 session，学生可以接着把没答完的题答完。 */
+function openExamView(nodeId, recId) {
+  examViewId = nodeId;
+  mapSubNodeId = null;
+  selNodeId = nodeId;
+  examBusy = '';
+  const recs = examRecords(nodeId);
+  const target = recId ? findExamRec(nodeId, recId) : recs[recs.length - 1];
+  examSession = {
+    nodeId,
+    recId: target ? target.id : '',
+    histOpen: false,
+    openHistKey: '',
+    notice: target ? '' : '这个知识点还没考过 —— 点「📝 知识考察」，AI 会现场出 5 道题。'
+  };
+  renderMap();
+  if (mapBody) mapBody.scrollTop = 0;
+}
+
+function toggleExamHistory() {
+  if (!examSession) return;
+  examSession.histOpen = !examSession.histOpen;
+  examSession.openHistKey = '';
+  renderMap();
+}
+
+function toggleExamHistItem(key) {
+  if (!examSession) return;
+  examSession.openHistKey = examSession.openHistKey === key ? '' : key;
+  renderMap();
+}
+
+/* ---------- 渲染：考察面板 ---------- */
+function examViewHTML(nodeId) {
+  const st = examStateOf(nodeId);
+  const recs = examRecords(nodeId);
+  const stars = examMasteryStars(nodeId);
+  const auto = autoNodeMastery(nodeId);
+  const cur = (examSession && examSession.nodeId === nodeId && examSession.recId)
+    ? findExamRec(nodeId, examSession.recId) : null;
+
+  let h = `<div class="exam-wrap">
+    <div class="exam-hd">
+      <button class="btn sm ghost" data-act="exam-back">‹ 返回地图</button>
+      <span class="t">${esc(nodeLabel(nodeId))} · 知识考察</span>
+    </div>
+    <div class="exam-note">
+      <div class="big">知识点错误率 <b>${st.err == null ? '—' : st.err + '%'}</b>
+        <span class="st-badge ${stCls(st.key)}">${esc(st.label)}</span></div>
+      <div>已考 ${st.recs} 次 · 共 ${countExamQuestions(nodeId)} 道题 · 掌握度 ${
+        stars == null ? '未评' : stars + '★'}${
+        (stars != null && auto != null) ? `（疑问库自动聚合 ${auto}★ 已作为基线叠加）` : ''}</div>
+      <div>判定阈值：错误率 ≤20% 正常；&gt;20% 需复习；&gt;50% 未掌握。错误率 = 该知识点所有考过的题的平均。</div>
+    </div>
+    <div class="exam-ops">
+      <button class="btn sm" data-act="exam-new" data-node="${nodeId}">📝 知识考察</button>
+      ${st.open ? `<button class="btn sm" data-act="exam-remedy" data-node="${nodeId}">🩹 再次学习</button>` : ''}
+      ${countExamQuestions(nodeId) ? `<button class="btn sm ghost" data-act="exam-history" data-node="${nodeId}">${
+        (examSession && examSession.histOpen) ? '收起历史 ▴' : '查看更多 ▾'}</button>` : ''}
+    </div>
+    ${examBusy ? `<div class="exam-bar">${esc(examBusy)}</div>` : ''}
+    ${(examSession && examSession.notice) ? `<div class="exam-bar">${esc(examSession.notice)}</div>` : ''}`;
+
+  if (cur) {
+    h += recordHTML(nodeId, cur);
+  } else {
+    h += `<div class="vault-empty">还没有考察记录。<br><br>
+      点上面的 <b>📝 知识考察</b>，<br>
+      AI 会针对这个知识点现场出 <b>5 道题</b>（填空 / 概念简答），<br>
+      逐题作答并判分，算出的错误率决定状态，<br>
+      题目和作答全部永久存档，随时能回看。</div>`;
+  }
+  h += historyHTML(nodeId);
+  return h + '</div>';
+}
+
+function recTitle(rec) {
+  return rec.mode === 'exam'
+    ? `本次知识考察 · ${dateText(rec.at)} · ${(rec.questions || []).length} 道题`
+    : `${modeLabel(rec.mode)} · ${dateText(rec.at)} · ${(rec.questions || []).length} 道题`;
+}
+
+/* 一整轮考察：题目卡片（可作答 / 已判定）+ 汇总 + 三层补救的下一步 */
+function recordHTML(nodeId, rec) {
+  const qs = rec.questions || [];
+  let h = `<div class="exam-hd"><span class="t">${esc(recTitle(rec))}</span></div>`;
+  if (rec.mode === 'l3') h += layerBoxHTML();
+  if (!qs.length) h += '<div class="exam-note">这一轮没有题目。</div>';
+  qs.forEach((q, i) => { h += questionHTML(nodeId, rec, q, i); });
+  const err = recordErrorRate(rec);
+  if (rec.mode === 'l3') {
+    h += l3TailHTML(nodeId, rec);
+  } else if (err != null) {
+    h += summaryHTML(nodeId, rec, err);
+    h += remedyNextHTML(nodeId, rec, err);
+  }
+  return h;
+}
+
+function questionHTML(nodeId, rec, q, i) {
+  const judged = !!q.judged;
+  const live = rec.mode !== 'l3';      // 第三层不再出新题：只展示当时的作答，不给输入框
+  let h = `<div class="exam-q">
+    <div class="qh">
+      <span>第 ${i + 1} 题</span>
+      <span class="st-badge">${q.type === 'fill' ? '填空' : '简答'}</span>
+      ${judged ? `<span class="st-badge ${q.verdict === 'right' ? 'normal' : q.verdict === 'partial' ? 'review' : 'bad'}">${
+        q.verdict === 'right' ? '对' : q.verdict === 'partial' ? '部分对' : '错'}</span>` : ''}
+      ${(!judged && q.skipWhy) ? '<span class="st-badge">判定失败·已跳过</span>' : ''}
+    </div>
+    <div class="qt">${esc(q.q)}</div>`;
+  if (!live) {
+    h += `<div class="exam-ref done"><b>你当时的作答：</b>${esc(asText(q.studentAnswer)) || '（空）'}</div>`;
+  } else if (!judged) {
+    h += `<textarea data-exq="${i}" placeholder="${q.type === 'fill' ? '填一个词或一句短答案…' : '用一两句话回答…'}">${esc(asText(q.studentAnswer))}</textarea>
+      <div class="qacts">
+        <button class="btn sm" data-act="exam-submit" data-node="${nodeId}" data-rec="${esc(rec.id)}" data-i="${i}">提交本题</button>
+        <span class="tip">提交后立刻单独判分</span>
+      </div>`;
+  } else {
+    h += `<div class="exam-ref done"><b>你写的：</b>${esc(asText(q.studentAnswer)) || '（空）'}</div>`;
+  }
+  if (judged) h += judgeBoxHTML(q);
+  // 第三层：每道旧题都可以点「📖 学习」——只讲这一道题，不是再考一次
+  if (rec.mode === 'l3') {
+    h += `<div class="qacts">
+      <button class="btn sm" data-act="exam-tutor" data-node="${nodeId}" data-rec="${esc(rec.id)}" data-i="${i}">📖 学习（只讲这道题）</button>
+      <span class="tip">只针对本题讲解，不会出题考你</span>
+    </div>`;
+    if (q.tutor) h += `<div class="exam-ref"><b>讲解：</b>${esc(q.tutor)}</div>`;
+  }
+  // 判定失败：显式说明「跳过」，并且不算分、不动掌握度（上面输入框还在，可以重试）
+  if (live && !judged && q.skipWhy) {
+    h += `<div class="exam-judge skip">⏸ ${esc(q.skipWhy)}（已跳过：不计入错误率、不影响掌握度）</div>`;
+  }
+  return h + '</div>';
+}
+
+function judgeBoxHTML(q) {
+  const lbl = q.verdict === 'right' ? '✅ 答对了' : q.verdict === 'partial' ? '🟡 部分对' : '❌ 答错';
+  return `<div class="exam-judge ${q.verdict}">
+    ${lbl} · 准确度 ${q.accuracy}/100 · 单题错误率 ${q.errorRate}%
+    ${q.comment ? '<br>' + esc(q.comment) : ''}
+    <div class="exam-ref"><b>参考答案：</b>${esc(q.refAnswer)}</div>
+    ${q.explanation ? `<div class="exam-ref"><b>解析：</b>${esc(q.explanation)}</div>` : ''}
+  </div>`;
+}
+
+function summaryHTML(nodeId, rec, err) {
+  const stt = stateOfErrorRate(err);
+  const acc = 100 - err;
+  const gain = acc >= 80 ? EXAM_MASTERY.ACTIVE_HIGH : acc >= 50 ? EXAM_MASTERY.ACTIVE_MID : EXAM_MASTERY.ACTIVE_LOW;
+  const stars = examMasteryStars(nodeId);
+  const allErr = knowledgeErrorRate(nodeId);
+  const allSt = stateOfErrorRate(allErr);
+  return `<div class="exam-sum">
+    本次考察错误率 <b>${err}%</b> <span class="st-badge ${stCls(stt.key)}">${esc(stt.label)}</span><br>
+    知识点累计错误率（所有考过的题）<b>${allErr == null ? '—' : allErr + '%'}</b>
+      <span class="st-badge ${stCls(allSt.key)}">${esc(allSt.label)}</span><br>
+    掌握度 ${stars == null ? '未评' : stars + '★'} · 本次 <b>${gain >= 0 ? '+' : ''}${gain} 分</b>（主动考察：正确率 ${
+      acc >= 80 ? '≥80% → 大幅提升' : acc >= 50 ? '50%~80% → 小步提升' : '&lt;50% → 考察答错要降'}）<br>
+    ${rec.weakness ? `<span class="weak">⚠ 具体没掌握的地方：${esc(rec.weakness)}</span>` : ''}
+  </div>`;
+}
+
+/* 三层补救的下一步。≤20% 收工；还错就给下一层入口（第三层不出新题，所以只引导到 l2 / l3） */
+function remedyNextHTML(nodeId, rec, err) {
+  if (err <= 20) {
+    return `<div class="exam-layer"><b>这一轮达标了</b>（本轮错误率 ${err}% ≤ 20%）—— 不用继续补救，保持住就行。</div>`;
+  }
+  if (rec.mode === 'exam') {
+    if (!examStateOf(nodeId).open) return '';
+    return `<div class="exam-layer"><b>错误率 ${err}% 偏高</b>，建议点上面的「🩹 再次学习」：
+      第一层会先挖更基础的题来考（例如光合作用没懂 → 先考叶绿体的结构、光反应和暗反应的区别）。</div>`;
+  }
+  if (rec.mode === 'l1') {
+    return `<div class="exam-layer"><b>第一层还没降下来</b>（本轮错误率 ${err}% &gt; 20%）。
+      <div class="exam-ops" style="margin-top:8px">
+        <button class="btn sm" data-act="exam-layer" data-node="${nodeId}" data-stage="2">继续第二层（再挖一轮更底层的题）</button>
+        <button class="btn sm ghost" data-act="exam-layer3" data-node="${nodeId}">直接看答案与解析（第三层）</button>
+      </div></div>`;
+  }
+  if (rec.mode === 'l2') {
+    return `<div class="exam-layer"><b>第二层还是没降下来</b>（本轮错误率 ${err}% &gt; 20%）。
+      <div class="exam-ops" style="margin-top:8px">
+        <button class="btn sm" data-act="exam-layer3" data-node="${nodeId}">进入第三层：不再出新题，直接给答案与解析</button>
+      </div></div>`;
+  }
+  return '';
+}
+
+/* 第三层：不再出新题，只给答案 + 解析 —— 这是它与前两层最大的不同，界面上要说白 */
+function layerBoxHTML() {
+  return `<div class="exam-layer l3">
+    <b>第三层：不再出新题。</b>下面是你前面答错的题，直接给参考答案和解析。
+    每道题都可以点「📖 学习」，只讲这一道题。看完点「结束本次补救」，这个知识点会标记为 <b>已掌握</b>；
+    之后想继续追问可以自己在下边问 —— <b>系统不会再自动出题考你</b>。
+  </div>`;
+}
+
+/* 第三层收尾：自主追问（系统不自动出题）+ 结束本次补救 */
+function l3TailHTML(nodeId, rec) {
+  const fus = Array.isArray(rec.followUps) ? rec.followUps : [];
+  return `<div class="exam-q">
+    <div class="qh"><span>还想问点什么？</span><span>只讲解，不会再出题考你</span></div>
+    <textarea data-exfollow="${esc(rec.id)}" placeholder="就这些题继续问我…"></textarea>
+    <div class="qacts">
+      <button class="btn sm" data-act="exam-follow" data-node="${nodeId}" data-rec="${esc(rec.id)}">追问</button>
+      <span class="tip">主动权在你：系统不会自动出题</span>
+    </div>
+    ${fus.map(f => `<div class="exam-ref"><b>你问：</b>${esc(f.ask)}<br><b>老师：</b>${esc(f.answer)}</div>`).join('')}
+  </div>
+  <div class="exam-ops">
+    <button class="btn sm" data-act="exam-finish" data-node="${nodeId}" data-rec="${esc(rec.id)}">结束本次补救 · 标记为已掌握</button>
+  </div>`;
+}
+
+/* 「查看更多」的历史：这个知识点考过的全部题目（新的在前），
+   点某一道 → 展开「当时我写的答案 + AI 的评语」。 */
+function historyHTML(nodeId) {
+  const recs = examRecords(nodeId);
+  const total = recs.reduce((s, r) => s + (r.questions || []).length, 0);
+  if (!total || !(examSession && examSession.histOpen)) return '';
+  let list = '';
+  recs.slice().reverse().forEach(r => {
+    const qs = r.questions || [];
+    for (let i = qs.length - 1; i >= 0; i--) list += histItemHTML(r, qs[i], i);
+  });
+  return `<div class="exam-hist-hd"><span class="tip">历史：这个知识点考过的全部 ${total} 道题（点一道就能看到当时怎么答的）</span></div>
+    <div class="exam-hist-list">${list}</div>`;
+}
+
+function histItemHTML(rec, q, i) {
+  const key = rec.id + ':' + i;
+  const open = !!(examSession && examSession.openHistKey === key);
+  const chip = !q.judged
+    ? `<span class="tag sk">${q.skipWhy ? '判定失败' : '未作答'}</span>`
+    : `<span class="tag ${q.verdict === 'right' ? 'ok' : q.verdict === 'partial' ? 'half' : 'no'}">${
+        q.verdict === 'right' ? '对' : q.verdict === 'partial' ? '部分对' : '错'} ${q.errorRate}%</span>`;
+  return `<div class="exam-hist" data-act="exam-histopen" data-key="${esc(key)}">
+    <div class="ht">${esc(q.q)}</div>
+    <div class="hm">
+      <span class="tag">${modeLabel(rec.mode)}</span>
+      <span class="tag">${q.type === 'fill' ? '填空' : '简答'}</span>
+      ${chip}
+      <span>${dateText(rec.at)}</span>
+      <span class="open-mark">${open ? '▲ 收起' : '▼ 看当时怎么答的'}</span>
+    </div>
+    ${open ? `<div class="exam-hist-body">
+      <div class="exam-ref done"><b>当时我写的：</b>${esc(asText(q.studentAnswer)) || '（空着没写）'}</div>
+      <div class="exam-ref done"><b>AI 的评语：</b>${q.judged ? (esc(q.comment) || '（这次没给评语）') : esc(q.skipWhy || '还没作答')}</div>
+      <div class="exam-ref done"><b>参考答案：</b>${esc(q.refAnswer)}</div>
+    </div>` : ''}
+  </div>`;
+}
+
+/* ---------- 流程：开始一轮考察 / 补救 ---------- */
+async function beginExamRound(nodeId, mode) {
+  if (!nodeById(nodeId)) return;
+  examViewId = nodeId;
+  if (!examSession || examSession.nodeId !== nodeId) {
+    examSession = { nodeId, recId: '', histOpen: false, openHistKey: '', notice: '' };
+  }
+  examSession.notice = '';
+  examBusy = mode === 'exam'
+    ? `正在现场出题…（${EXAM_Q_COUNT} 道填空 / 简答）`
+    : `正在挖${mode === 'l1' ? '第一' : '第二'}层的题…（${REMEDY_Q_COUNT} 道更基础的）`;
+  renderMap();
+
+  let qs = null, failWhy = '';
+  try {
+    qs = await generateQuestions(nodeId, mode);
+  } catch (e) {
+    failWhy = (e && e.message) ? e.message : '请求失败';
+  }
+  examBusy = '';
+
+  if (!qs || !qs.length) {
+    // 解析失败 / 请求失败：显式告诉学生，并且不写入任何考察记录（不静默降级）
+    examSession.notice = '没能拿到题目：' + (failWhy || '模型返回的内容解析失败') + '。已跳过，这次没有写入考察档案。';
+    renderMap();
+    toast('出题失败，已跳过');
+    return;
+  }
+  const rec = {
+    id: 'ex' + Date.now() + Math.random().toString(36).slice(2, 5),
+    at: Date.now(), mode,
+    questions: qs.map(x => ({
+      q: x.q, type: x.type, refAnswer: x.refAnswer, studentAnswer: '',
+      judged: false, accuracy: null, errorRate: null, verdict: '',
+      comment: '', skipWhy: '', explanation: '', tutor: '', at: 0
+    })),
+    errorRate: null, level: '', weakness: '', remedyEnd: '', followUps: []
+  };
+  if (!Array.isArray(exams[nodeId])) exams[nodeId] = [];
+  exams[nodeId].push(rec);
+  saveExams();
+  examSession.recId = rec.id;
+  examSession.notice = mode === 'exam'
+    ? `已生成 ${qs.length} 道题：逐题作答，每题点「提交本题」后单独判分。`
+    : `补救${mode === 'l1' ? '第一' : '第二'}层已出 ${qs.length} 道更基础的题：本轮错误率降到 20% 以下就算过关。`;
+  renderMap();
+  if (mapBody) mapBody.scrollTop = 0;
+}
+
+/* 重绘前把还没提交的输入框内容捞回记录里（不然重绘会把草稿冲掉） */
+function syncExamDrafts() {
+  if (!mapBody || !examSession || !examSession.recId) return;
+  const rec = findExamRec(examSession.nodeId, examSession.recId);
+  if (!rec) return;
+  (rec.questions || []).forEach((q, i) => {
+    if (q.judged) return;
+    const ta = mapBody.querySelector('textarea[data-exq="' + i + '"]');
+    if (ta) q.studentAnswer = ta.value.trim();
+  });
+}
+
+/* 提交一道题：先判分，再落库（答一题存一题，中途关页面也不丢） */
+async function submitExamAnswer(nodeId, recId, i) {
+  const rec = findExamRec(nodeId, recId);
+  if (!rec) { toast('这条考察记录不在了'); return; }
+  syncExamDrafts();
+  const q = (rec.questions || [])[i];
+  if (!q) return;
+  const ans = asText(q.studentAnswer);
+  if (!ans) { toast('先写点东西吧'); return; }
+
+  examBusy = '正在判这一题…';
+  renderMap();
+  let res = null, why = '';
+  try {
+    res = await judgeOne(nodeId, q, ans);
+  } catch (e) {
+    why = (e && e.message) ? e.message : '请求失败';
+  }
+  examBusy = '';
+  if (!res) {
+    // 显式跳过：不写分数、不计错误率、不动掌握度
+    q.judged = false;
+    q.skipWhy = '这次没能解析出判定结果' + (why ? '（' + why + '）' : '');
+  } else {
+    q.judged = true; q.skipWhy = '';
+    q.accuracy = res.accuracy;
+    q.errorRate = 100 - res.accuracy;
+    q.verdict = res.verdict;
+    q.comment = res.comment;
+    q.at = Date.now();
+  }
+  rec.errorRate = recordErrorRate(rec);
+  rec.level = rec.errorRate == null ? '' : stateOfErrorRate(rec.errorRate).key;
+  saveExams();
+  renderMap();
+  if (q.judged) {
+    toast(`第 ${i + 1} 题：${q.verdict === 'right' ? '对' : q.verdict === 'partial' ? '部分对' : '错'} · 单题错误率 ${q.errorRate}%`);
+  } else {
+    toast(`第 ${i + 1} 题：判定失败，已跳过`);
+  }
+  await afterExamRound(nodeId, rec);
+}
+
+/* 一轮题目全部「判完或明确跳过」之后的收尾 */
+async function afterExamRound(nodeId, rec) {
+  const qs = rec.questions || [];
+  if (!qs.length) return;
+  if (!qs.every(q => q.judged || q.skipWhy)) return;   // 还有题没答
+  const err = recordErrorRate(rec);
+  if (err == null) return;                             // 一道都没判出来 → 不分析、不推进
+
+  if (rec.mode === 'exam') {
+    // 主动考察：错误率偏高时让 AI 说清「具体哪儿没掌握」，顺便给每题解析
+    if (err > 20 && !rec.weakness) await fetchAnalysis(nodeId, rec);
+    return;
+  }
+  if (err <= 20) {
+    rec.remedyEnd = 'passed';                          // 这一层降下来了
+    saveExams();
+    renderMap();
+    toast(`这一轮错误率 ${err}%，补救达标 🎉`);
+    return;
+  }
+  renderMap();   // 还错 → 面板上会出现「继续第二层 / 进入第三层」的入口（不自动出题，避免连点消耗）
+}
+
+/* 错题诊断：写 weakness + 每题解析。解析失败就整块跳过，不假装分析过 */
+async function fetchAnalysis(nodeId, rec) {
+  const wrong = (rec.questions || []).map((q, i) => ({ i: i + 1, q }))
+    .filter(p => p.q.judged && p.q.verdict !== 'right');
+  if (!wrong.length) return false;
+  examBusy = '正在分析你具体哪儿没掌握…';
+  renderMap();
+  let res = null;
+  try { res = await analyzeWrong(nodeId, wrong); } catch (e) { res = null; }
+  examBusy = '';
+  if (!res) { renderMap(); return false; }             // 显式跳过
+  rec.weakness = res.weakness;
+  res.items.forEach(it => {
+    const q = rec.questions[it.i - 1];
+    if (q && it.explanation && !q.explanation) q.explanation = it.explanation;
+  });
+  saveExams();
+  renderMap();
+  return true;
+}
+
+/* ---------- 第三层：不再出新题，直接给答案与解析 ---------- */
+async function enterRemedy3(nodeId) {
+  const recs = examRecords(nodeId);
+  let bad = [];
+  // 先收前两层补救里的错题
+  recs.forEach(r => {
+    if (r.mode !== 'l1' && r.mode !== 'l2') return;
+    (r.questions || []).forEach(q => { if (q.judged && q.verdict !== 'right') bad.push(q); });
+  });
+  // 前两层没有（或一道都没判出来）→ 退回主动考察里的错题
+  if (!bad.length) {
+    recs.forEach(r => {
+      if (r.mode !== 'exam') return;
+      (r.questions || []).forEach(q => { if (q.judged && q.verdict !== 'right') bad.push(q); });
+    });
+  }
+  bad = bad.slice(-4);       // 最多讲 4 道：够讲清，又不至于刷屏
+  if (!bad.length) { toast('没有找到可以讲的错题'); return; }
+
+  const rec = {
+    id: 'ex' + Date.now() + Math.random().toString(36).slice(2, 5),
+    at: Date.now(), mode: 'l3',
+    // 第三层不再出题：这些题就是前两层的旧错题，原样搬过来讲
+    questions: bad.map(q => ({
+      q: q.q, type: q.type, refAnswer: q.refAnswer, studentAnswer: q.studentAnswer,
+      judged: true, accuracy: q.accuracy, errorRate: q.errorRate, verdict: q.verdict,
+      comment: q.comment, skipWhy: '', explanation: '', tutor: '', at: q.at
+    })),
+    errorRate: null, level: '', weakness: '', remedyEnd: '', followUps: []
+  };
+  if (!Array.isArray(exams[nodeId])) exams[nodeId] = [];
+  exams[nodeId].push(rec);
+  saveExams();
+  examSession = { nodeId, recId: rec.id, histOpen: false, openHistKey: '', notice: '第三层：不再出新题。' };
+  renderMap();
+  if (mapBody) mapBody.scrollTop = 0;
+
+  // 让模型给每道错题写解析（同一套「绝不出题」的规则）
+  examBusy = '正在整理答案与解析…';
+  renderMap();
+  let res = null;
+  try { res = await analyzeWrong(nodeId, rec.questions.map((q, i) => ({ i: i + 1, q }))); } catch (e) { res = null; }
+  examBusy = '';
+  if (!res) {
+    examSession.notice = '第三层：不再出新题。解析这次没能生成，已跳过 —— 参考答案仍然可以对照。';
+  } else {
+    rec.weakness = res.weakness;
+    res.items.forEach(it => {
+      const q = rec.questions[it.i - 1];
+      if (q && it.explanation) q.explanation = it.explanation;
+    });
+    examSession.notice = '第三层：不再出新题，下面是答案与解析。'
+      + (res.weakness ? '诊断：' + res.weakness : '');
+  }
+  saveExams();
+  renderMap();
+}
+
+/* 点「📖 学习」：只针对这一道题讲解（第三层是「讲」，不是「考」） */
+async function tutorOneClick(nodeId, recId, i) {
+  const rec = findExamRec(nodeId, recId);
+  if (!rec) return;
+  const q = (rec.questions || [])[i];
+  if (!q) return;
+  examBusy = '正在讲这一道题…';
+  renderMap();
+  let txt = '';
+  try { txt = await explainOne(nodeId, q); } catch (e) { txt = ''; }
+  examBusy = '';
+  if (!txt) { renderMap(); toast('讲解没能拿到，已跳过'); return; }
+  q.tutor = txt;
+  saveExams();
+  renderMap();
+}
+
+/* 第三层里的自主追问：学生问什么答什么，系统不自动出题 */
+async function followUpClick(nodeId, recId) {
+  const rec = findExamRec(nodeId, recId);
+  if (!rec) return;
+  const ta = mapBody ? mapBody.querySelector('textarea[data-exfollow="' + recId + '"]') : null;
+  const ask = ta ? ta.value.trim() : '';
+  if (!ask) { toast('先写要问的问题'); return; }
+  const q = (rec.questions || [])[0] || { q: '', refAnswer: '', studentAnswer: '', comment: '' };
+  examBusy = '正在回答你的追问…';
+  renderMap();
+  let txt = '';
+  try { txt = await explainOne(nodeId, q, ask); } catch (e) { txt = ''; }
+  examBusy = '';
+  if (!txt) { renderMap(); toast('没能拿到回答，已跳过'); return; }
+  rec.followUps = Array.isArray(rec.followUps) ? rec.followUps : [];
+  rec.followUps.push({ ask, answer: txt });
+  saveExams();
+  renderMap();
+}
+
+/* 结束本次补救 → 该知识点标记为「已掌握」（第三层讲完，学生自己按结束） */
+function finishRemedy(nodeId, recId) {
+  const rec = findExamRec(nodeId, recId);
+  if (!rec) return;
+  rec.remedyEnd = 'mastered';
+  saveExams();
+  renderMap();
+  toast('已标记为「已掌握」· 想继续追问随时问我');
+}
+
+/* ---------- ?exammock=1|hist|open 示例考察档案（只在没有任何考察记录时注入） ----------
+   用途和 ?mock=1 一样：录视频 / 截图时不用真的考一遍。
+   插两条记录：一条已判完的（带评语、解析、薄弱点 → 错误率 41% = 需复习），
+   一条进行中的（5 道题、都还没答 → 用来演示「5 道题 + 作答区」）。 */
+function injectExamMock(nodeId) {
+  if (examRecords(nodeId).length) return;      // 已有记录就不覆盖
+  const now = Date.now();
+  const D = 24 * 60 * 60 * 1000;
+  const mkQ = (q, type, refAnswer, studentAnswer, accuracy, comment, explanation) => ({
+    q, type, refAnswer, studentAnswer, judged: true, accuracy,
+    errorRate: 100 - accuracy, verdict: normVerdict('', accuracy), comment,
+    skipWhy: '', explanation, tutor: '', at: now - 2 * D
+  });
+  const hist = {
+    id: 'exm1', at: now - 2 * D, mode: 'exam',
+    questions: [
+      mkQ('光反应的场所是____。', 'fill', '类囊体薄膜', '类囊体薄膜', 100, '地点记得很准',
+        '色素和光反应相关的酶都在类囊体薄膜上，所以光反应在那里进行。'),
+      mkQ('光反应为暗反应提供了什么？', 'qa', 'ATP 和 NADPH（同时释放氧气）', '提供了能量', 55, '只说能量，漏了 NADPH',
+        '光反应给出去的是 ATP 和 NADPH 两种「货币」，只说能量会漏掉还原剂 NADPH。'),
+      mkQ('暗反应（碳反应）进行的场所是____。', 'fill', '叶绿体基质', '叶绿体基质', 100, '对，在基质里进行', ''),
+      mkQ('光反应和暗反应有什么区别？', 'qa',
+        '是否需要光、进行的场所、物质变化都不同：光反应在类囊体薄膜上、必须有光；暗反应在叶绿体基质中、有光无光都能进行',
+        '一个有光一个没光', 40, '只说了条件，场所漏了',
+        '区别有三条：要不要光、在哪进行、物质怎么变。你只讲了第一条。'),
+      mkQ('光合作用释放的氧气来自____。', 'fill', '水（水的光解）', '二氧化碳', 0, '氧气来自水，不是二氧化碳',
+        '水的光解产生氧气；二氧化碳只提供碳，不提供氧。')
+    ],
+    errorRate: 41, level: 'needReview',
+    weakness: '光合作用的两个阶段没分清：知道有光反应和暗反应，但说不清各自的场所、条件和物质流向。',
+    remedyEnd: '', followUps: []
+  };
+  const live = {
+    id: 'exm2', at: now, mode: 'exam',
+    questions: [
+      { q: '光合作用的色素分布在____。', type: 'fill', refAnswer: '类囊体薄膜' },
+      { q: '请写出光合作用的总反应式。', type: 'qa', refAnswer: 'CO₂ + H₂O --(光能、叶绿体)--> (CH₂O) + O₂' },
+      { q: '暗反应中 CO₂ 先与____结合被固定。', type: 'fill', refAnswer: 'C₅（五碳化合物）' },
+      { q: '光反应产生的 NADPH 起什么作用？', type: 'qa', refAnswer: '提供还原剂（供氢），把 C₃ 还原成糖类' },
+      { q: '影响光合作用速率的环境因素有哪些？', type: 'qa', refAnswer: '光照强度、CO₂ 浓度、温度、水分和矿质元素等' }
+    ].map(x => ({
+      q: x.q, type: x.type, refAnswer: x.refAnswer, studentAnswer: '',
+      judged: false, accuracy: null, errorRate: null, verdict: '',
+      comment: '', skipWhy: '', explanation: '', tutor: '', at: 0
+    })),
+    errorRate: null, level: '', weakness: '', remedyEnd: '', followUps: []
+  };
+  exams[nodeId] = [hist, live];
+  saveExams();
+}
+
 /* ================= 演示参数（?demo=radial|sidebar|chat|setting|pomo|vault|review|map） ================= */
 const demo = new URLSearchParams(location.search).get('demo');
 if (demo === 'radial')  setTimeout(openRadial, 400);
@@ -1977,6 +3043,31 @@ if (demo === 'map') {
     }
     const sel = p.get('sel');
     openMap(sel && nodeById(sel) ? sel : 'bx1-ch1');
+  }, 400);
+}
+/* ?demo=exam 直接进「知识考察」面板：配 &sel=<节点id> 指定知识点
+   （默认第 5 章第 4 节「光合作用与能量转化」）。
+   &exammock=1|hist|open 会先注入一份示例考察档案（只在没有任何考察记录时生效，和 ?mock=1 同一套规矩）：
+     =1    演示「5 道题 + 作答区」
+     =hist 演示「查看更多」的历史题目列表
+     =open 历史列表 + 展开第一道旧题（看到当时的作答 + AI 评语）
+   录视频、截图时不用真的考一遍。 */
+if (demo === 'exam') {
+  setTimeout(() => {
+    const p = new URLSearchParams(location.search);
+    const mockTag = p.get('exammock');
+    const want = p.get('sel');
+    const nodeId = (want && nodeById(want)) ? want : 'bx1-ch5-s4';
+    if (mockTag) injectExamMock(nodeId);
+    openMap(nodeId);
+    openExamView(nodeId);
+    if (examSession && (mockTag === 'hist' || mockTag === 'open')) examSession.histOpen = true;
+    if (examSession && mockTag === 'open') examSession.openHistKey = 'exm1:0';
+    renderMap();
+    if (mockTag && mapBody && mockTag !== '1') {
+      const anchor = mapBody.querySelector('.exam-hist');
+      if (anchor && anchor.scrollIntoView) anchor.scrollIntoView({ block: 'start' });
+    }
   }, 400);
 }
 
