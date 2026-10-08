@@ -1,36 +1,53 @@
 @echo off
-chcp 65001 >nul
-title ä¼´å­¦ - æœ¬åœ°æœåŠ¡å™¨
-cd /d %~dp0
+rem °éÑ§ ¡¤ AI Ñ§Ï°¿Õ¼ä ¡ª¡ª Ò»¼üÆô¶¯£¨±¾ÎÄ¼þ±àÂë GBK/cp936¡¢»»ÐÐ CRLF£¬±ðÓÃ±à¼­Æ÷Áí´æ³É UTF-8£©
+title °éÑ§ - AI Ñ§Ï°¿Õ¼ä£¨±¾µØ·þÎñÆ÷£©
+cd /d "%~dp0"
 
 echo.
-echo   ================================
-echo      ä¼´å­¦ Â· AI å­¦ä¹ ç©ºé—´
-echo   ================================
+echo   ==========================================
+echo     °éÑ§ - AI Ñ§Ï°¿Õ¼ä  ^(±¾µØ·þÎñÆ÷^)
+echo   ==========================================
 echo.
+
+set "NODE="
 
 where node >nul 2>nul
-if errorlevel 1 (
-  echo   [!] æ²¡æœ‰æ£€æµ‹åˆ° Node.js
+if not errorlevel 1 set "NODE=node"
+
+if not defined NODE if exist "%ProgramFiles%\nodejs\node.exe" set "NODE=%ProgramFiles%\nodejs\node.exe"
+if not defined NODE if exist "%ProgramFiles(x86)%\nodejs\node.exe" set "NODE=%ProgramFiles(x86)%\nodejs\node.exe"
+if not defined NODE if exist "%LOCALAPPDATA%\Programs\nodejs\node.exe" set "NODE=%LOCALAPPDATA%\Programs\nodejs\node.exe"
+
+rem ¶µµ×£º±¾»ú±ð´¦×Ô´øÒ»·Ý node µÄÇé¿ö£¨ÀýÈç±à¼­Æ÷¡¢¹¤¾ßÁ´£©
+if not defined NODE (
+  for /d %%D in ("%USERPROFILE%\.dsh\dsh-runtimes\*") do (
+    if not defined NODE if exist "%%~fD\dependencies\node\bin\node.exe" set "NODE=%%~fD\dependencies\node\bin\node.exe"
+  )
+)
+
+if not defined NODE (
+  echo   [X] Ã»ÓÐ¼ì²âµ½ Node.js
   echo.
-  echo   ä½ æœ‰ä¸¤ä¸ªé€‰æ‹©ï¼š
+  echo   ÕâÌ¨µçÄÔ»¹Ã»×° Node.js^£¬ËùÒÔÆð²»ÁË±¾µØ·þÎñÆ÷¡£
+  echo   Á½¸ö°ì·¨^£¬ÈÎÑ¡Ò»¸ö£º
   echo.
-  echo   æ–¹å¼ä¸€ï¼ˆæœ€ç®€å•ï¼‰ï¼šç›´æŽ¥åŒå‡» index.html
-  echo            åŠŸèƒ½åŸºæœ¬ä¸€æ ·ï¼Œåªæ˜¯éƒ¨åˆ†æµè§ˆå™¨
-  echo            å¯¹æœ¬åœ°æ–‡ä»¶çš„ç½‘ç»œè¯·æ±‚é™åˆ¶æ›´ä¸¥ã€‚
+  echo     °ì·¨Ò»£¨×îÊ¡ÊÂ£©£ºÖ±½ÓË«»÷±¾Ä¿Â¼ÏÂµÄ index.html
+  echo                       Ò»ÑùÄÜÓÃ^£¬Ö»ÊÇµ÷ API Ê±¸ö±ðä¯ÀÀÆ÷»áÀ¹¿çÓò¡£
   echo.
-  echo   æ–¹å¼äºŒï¼ˆæŽ¨èï¼‰ï¼šè£…ä¸€ä¸ª Node.js
-  echo            åŽ» https://nodejs.org ä¸‹è½½ LTS ç‰ˆï¼Œ
-  echo            ä¸€è·¯ä¸‹ä¸€æ­¥è£…å®Œï¼Œå†åŒå‡»æœ¬æ–‡ä»¶å³å¯ã€‚
+  echo     °ì·¨¶þ£ºÈ¥ https://nodejs.org ÏÂÔØ LTS °æ×°ÉÏ^£¬ÔÙË«»÷±¾ÎÄ¼þ¡£
   echo.
-  pause
+  echo   °´ÈÎÒâ¼ü¹Ø±ÕÕâ¸ö´°¿Ú...
+  pause >nul
   exit /b 1
 )
 
-echo   æ­£åœ¨å¯åŠ¨æœ¬åœ°æœåŠ¡å™¨ï¼Œæµè§ˆå™¨ä¼šè‡ªåŠ¨æ‰“å¼€...
+echo   ÕýÔÚÆô¶¯·þÎñÆ÷^£¬Ä¬ÈÏ¶Ë¿Ú 8765 ^(±»Õ¼ÓÃ»á×Ô¶¯Ë³ÑÓ^)...
+echo   ä¯ÀÀÆ÷»á×Ô¶¯´ò¿ª^£¬Õâ¸öºÚ´°¿Ú²»Òª¹Ø^£¬¹ØÁË·þÎñ¾ÍÍ£ÁË¡£
 echo.
-node server.js
+
+"%NODE%" server.js
 
 echo.
-echo   æœåŠ¡å™¨å·²åœæ­¢ã€‚
+echo   [X] ·þÎñÆ÷ÍË³öÁË^£¬Çë°ÑÉÏÃæµÄ±¨´í½ØÍ¼¸ø¶ÓÓÑ¡£
+echo   °´ÈÎÒâ¼ü¹Ø±ÕÕâ¸ö´°¿Ú...
 pause >nul

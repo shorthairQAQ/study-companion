@@ -118,55 +118,169 @@ body{
 }
 .topbar .icon-btn:hover{background:#5a3f2e;border-color:var(--amber);color:var(--amber)}
 
-/* ============ To-Do 面板 ============ */
+/* ============ 任务即书籍：贴在背景书柜上的书架 ============
+   这块不再是「浮在画面上的卡片」，而是**叠在背景那面书柜上**的：
+     · 标题栏 = 钉在书架上方墙面上的一块木质铭牌
+     · 书脊   = 直接站在背景书柜第 2 层左侧的空位上，按层板那个 1.6° 的斜度一起倾斜
+     · 抽屉   = 记要点的阅读位/输入框，收在一只像素木抽屉里，用标题栏右边的 🗄 展开
+   面板本身 pointer-events:none，只有铭牌和书能点 —— 中间的区域点得到场景。
+   --------------------------------------------------------- */
 .todo{
-  position:fixed;left:22px;top:22px;width:268px;z-index:30;
-  background:var(--panel);border:3px solid var(--line);
-  box-shadow:6px 6px 0 rgba(0,0,0,.45);
+  position:fixed;left:0;top:0;width:100%;height:0;z-index:30;
+  pointer-events:none;border:none;background:none;box-shadow:none;
 }
+.todo-hd,.shelf,.todo-drawer{pointer-events:auto}
+/* ---- 木质铭牌 ---- */
 .todo-hd{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:9px 12px;border-bottom:2px solid var(--line);
-  font-size:13px;letter-spacing:2px;color:var(--amber);
+  position:fixed;left:1.0%;top:2.3%;width:15%;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  padding:5px 8px;border:2px solid #2a1710;
+  font-size:12px;letter-spacing:2px;color:#f0c98a;
+  background:
+    repeating-linear-gradient(180deg,rgba(0,0,0,.16) 0 1px,transparent 1px 4px),
+    linear-gradient(180deg,#8a5433,#5e3720 60%,#472817);
+  box-shadow:inset 0 2px 0 rgba(255,214,150,.30), inset 0 -3px 0 rgba(0,0,0,.35), 2px 3px 0 rgba(0,0,0,.45);
 }
-.todo-hd .cnt{font-size:11px;color:var(--cream-dim);letter-spacing:0}
-.todo-body{max-height:260px;overflow-y:auto}
-.todo-empty{padding:14px 12px;font-size:12px;color:var(--cream-dim);text-align:center}
-.todo-item{
-  display:flex;align-items:flex-start;gap:8px;
-  padding:8px 12px;font-size:13px;line-height:1.4;
-  border-bottom:1px solid rgba(122,92,68,.35);
+.todo-hd .cnt{font-size:10.5px;color:#e8c89a;letter-spacing:0}
+.todo-hd .hd-btn{
+  background:linear-gradient(180deg,#a86a3f,#6b3d22);border:2px solid #2a1710;color:#ffe0ae;
+  width:20px;height:20px;line-height:1;cursor:pointer;font-family:inherit;font-size:11px;
+  display:flex;align-items:center;justify-content:center;padding:0;
+  box-shadow:inset 0 1px 0 rgba(255,214,150,.35);
 }
-.todo-item:hover{background:rgba(255,200,97,.06)}
-.todo-item .box{
-  flex:0 0 15px;width:15px;height:15px;margin-top:2px;
-  border:2px solid var(--line-2);background:transparent;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;color:var(--ink);
+.todo-hd .hd-btn:hover{background:linear-gradient(180deg,#c98a52,#8a4f2b);color:#fff3d8}
+/* ---- 书架：透明的，书直接站在背景层板上 ---- */
+.shelf{position:fixed;left:0;top:0;width:100%;padding:0;margin:0;background:none;overflow:visible}
+.books-stack{position:fixed;left:1.6%;width:15%;height:0;pointer-events:auto;z-index:2}
+.books-stack .stack-book{position:absolute;bottom:0;pointer-events:auto}
+/* 书脊那一行：贴着层板、按层板斜度一起转；书自身绝对定位，left 由渲染时算 */
+.shelf-books{position:fixed;height:0;transform:rotate(.35deg);transform-origin:0 100%;z-index:3;
+  pointer-events:none}
+.shelf-books .book{position:absolute;bottom:0;height:5.2vh;pointer-events:auto;
+  filter:drop-shadow(1px 2px 0 rgba(0,0,0,.45))}
+.shelf-books .book svg{width:100%;height:100%;display:block}
+/* 书脚下一点接触阴影，避免看起来是浮在背景上 */
+.shelf-books .book::after{content:'';position:absolute;left:-1px;right:-1px;bottom:-3px;height:5px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,0,0,.6),transparent 72%)}
+.shelf-empty{position:fixed;left:1.6%;width:14%;font-size:10.5px;color:#b4936c;line-height:1.7;
+  text-shadow:1px 1px 0 rgba(0,0,0,.6);pointer-events:none}
+.shelf-row,.shelf-plank{display:none}
+
+/* 书脊：像素风 —— 竖排像素字、块状明暗、深色描边，颜色取自背景书柜的调色板 */
+.book{position:relative;flex:0 0 auto;cursor:pointer;transform-origin:bottom center;
+  transition:transform .16s steps(3),filter .16s}
+.book svg{display:block;
+  filter:drop-shadow(1px 0 0 rgba(0,0,0,.55)) drop-shadow(0 2px 1px rgba(0,0,0,.5))}
+.book:hover{transform:translateY(-6px)}
+.book:hover svg{filter:drop-shadow(1px 0 0 rgba(0,0,0,.55)) drop-shadow(0 0 5px rgba(255,206,130,.55)) brightness(1.12)}
+.book.reading svg{filter:drop-shadow(1px 0 0 rgba(0,0,0,.55)) drop-shadow(0 0 6px rgba(255,200,97,.75))}
+.book.out{opacity:0;pointer-events:none}
+/* 正在读的书：书脊留在架上占位但隐身（书已经「拿出来」了），
+   这样放回去时 DOM 里有真实的落点可以测量坐标 —— 否则飞行只能退化成瞬间归位 */
+.book.away>svg{opacity:0}
+.book.away{cursor:default}
+.book.away:hover{transform:none}
+.book.pulse svg{animation:bookPulse .9s steps(6)}
+@keyframes bookPulse{
+  0%{filter:drop-shadow(1px 0 0 rgba(0,0,0,.55))}
+  40%{filter:drop-shadow(0 0 9px rgba(255,200,97,.95)) brightness(1.35)}
+  100%{filter:drop-shadow(1px 0 0 rgba(0,0,0,.55))}
 }
-.todo-item.done .box{background:var(--ok);border-color:var(--ok)}
-.todo-item.done .box::after{content:'✓'}
-.todo-item.done .txt{text-decoration:line-through;color:var(--cream-dim)}
-.todo-item .txt{flex:1;word-break:break-word}
-.todo-item .del{
-  opacity:0;cursor:pointer;color:var(--cream-dim);font-size:14px;line-height:1;
-  padding:0 2px;transition:opacity .15s,color .15s;
+.stack-book{cursor:pointer;transition:transform .16s steps(3)}
+.stack-book:hover{transform:translateY(-3px)}
+.stack-book svg{display:block;filter:drop-shadow(1px 1px 0 rgba(0,0,0,.55))}
+.shelf-row .row-tag{position:absolute;right:4px;top:-2px;font-size:9px;color:#c9a87e;letter-spacing:1px;
+  text-shadow:1px 1px 0 rgba(0,0,0,.6)}
+.books-stack .row-tag{position:absolute;right:2px;bottom:0;font-size:9px;color:#c9a87e;letter-spacing:1px;
+  text-shadow:1px 1px 0 rgba(0,0,0,.6);white-space:nowrap}
+
+/* ---- 阅读位 / 加书：一只收起来的像素木抽屉 ---- */
+.todo-drawer{
+  position:fixed;left:1%;top:30%;width:15.5%;display:none;
+  border:3px solid #2a1710;padding:7px 8px 8px;
+  background:
+    repeating-linear-gradient(180deg,rgba(0,0,0,.14) 0 1px,transparent 1px 4px),
+    linear-gradient(180deg,#7d4c2c,#5a3420 50%,#3d2314);
+  box-shadow:inset 0 3px 0 rgba(255,214,150,.22), inset 0 -4px 0 rgba(0,0,0,.4), 4px 5px 0 rgba(0,0,0,.5);
 }
-.todo-item:hover .del{opacity:1}
-.todo-item .del:hover{color:#e07a5f}
-.todo-add{display:flex;border-top:2px solid var(--line)}
+.todo-drawer.open{display:block;animation:drawerOut .22s steps(4)}
+@keyframes drawerOut{from{transform:translateY(-10px);opacity:0}to{transform:none;opacity:1}}
+
+/* ---- 阅读位：正在读的那本摊在这里 ---- */
+.reading{display:none;position:relative;overflow:hidden;padding:7px 8px 8px;border-bottom:2px solid #2a1710;
+  background:rgba(26,14,9,.55)}
+.reading.on{display:block}
+.reading .r-top{display:flex;align-items:center;gap:7px}
+/* 阅读位上「躺着的这本书」：飞行结束后由这里接手，书就一直摆在桌上 */
+.reading .r-spine{flex:0 0 auto;display:flex;align-items:flex-end;margin-bottom:-2px}
+.reading .r-spine svg{display:block;width:9px;height:22px;filter:drop-shadow(1px 1px 0 rgba(0,0,0,.5))}
+.reading .r-title{flex:1;font-size:12px;line-height:1.4;color:#ffd79a;word-break:break-word;
+  text-shadow:1px 1px 0 rgba(0,0,0,.6)}
+.reading .r-dot{
+  flex:0 0 auto;width:6px;height:6px;background:#8fbf6a;box-shadow:0 0 5px #8fbf6a;
+  animation:readPulse 1.6s steps(2) infinite;
+}
+@keyframes readPulse{0%,100%{opacity:.35}50%{opacity:1}}
+.reading .r-meta{font-size:10.5px;color:#d8b98c;margin-top:5px;display:flex;gap:8px;flex-wrap:wrap;
+  font-variant-numeric:tabular-nums}
+.reading .r-acts{display:flex;gap:5px;margin-top:7px}
+.reading .r-acts .btn{flex:1;padding:5px 0;font-size:11px}
+.reading .r-pages{margin-top:7px;border-top:2px solid rgba(42,23,16,.8);padding-top:6px;display:none}
+.reading .r-pages.on{display:block}
+.reading .r-page{font-size:11px;line-height:1.5;color:#f2e0c4;padding:4px 0;
+  border-bottom:1px solid rgba(42,23,16,.6)}
+.reading .r-page:last-child{border-bottom:none}
+.reading .r-page .q{color:#cbb08a}
+.reading .r-page .p{color:#a8cc82}
+.reading .r-empty{font-size:10.5px;color:#b4936c;line-height:1.6;margin-top:6px}
+
+/* 加书（＝加任务）：木抽屉底部的一行刻字木槽 */
+.todo-add{display:flex;margin-top:7px;border:2px solid #2a1710;
+  background:linear-gradient(180deg,#3a2114,#26150d);
+  box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
 .todo-add input{
-  flex:1;background:transparent;border:none;outline:none;
-  padding:10px 12px;color:var(--cream);font-size:13px;
-  font-family:inherit;
+  flex:1;min-width:0;background:transparent;border:none;outline:none;
+  padding:7px 8px;color:#ffe6bd;font-size:11.5px;font-family:inherit;
 }
-.todo-add input::placeholder{color:#8a7562}
+.todo-add input::placeholder{color:#a3815c}
 .todo-add button{
-  background:transparent;border:none;border-left:2px solid var(--line);
-  color:var(--amber);padding:0 14px;cursor:pointer;font-size:16px;
-  font-family:inherit;transition:background .15s;
+  background:linear-gradient(180deg,#a86a3f,#6b3d22);border:none;border-left:2px solid #2a1710;
+  color:#ffe0ae;padding:0 11px;cursor:pointer;font-size:14px;font-family:inherit;
 }
-.todo-add button:hover{background:rgba(255,200,97,.12)}
+.todo-add button:hover{background:linear-gradient(180deg,#c98a52,#8a4f2b)}
+
+/* ---- 书页详情弹窗 ---- */
+.bookmask{position:fixed;inset:0;background:rgba(10,6,4,.78);z-index:85;
+  display:none;align-items:center;justify-content:center}
+.bookmask.open{display:flex}
+.bookcard{
+  width:520px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;
+  background:var(--panel-2);border:3px solid var(--line);box-shadow:8px 8px 0 rgba(0,0,0,.55);
+}
+.bookcard .bc-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:2px solid var(--line)}
+.bookcard .bc-hd .t{flex:1;font-size:14px;color:var(--amber);letter-spacing:1px;line-height:1.4}
+.bookcard .bc-meta{padding:10px 16px;border-bottom:1px solid rgba(122,92,68,.5);
+  font-size:11.5px;color:var(--cream-dim);display:flex;gap:14px;flex-wrap:wrap;
+  font-variant-numeric:tabular-nums}
+.bookcard .bc-body{flex:1;overflow-y:auto;padding:12px 16px}
+.bookcard .bc-page{padding:9px 0;border-bottom:1px dashed rgba(122,92,68,.35)}
+.bookcard .bc-page:last-child{border-bottom:none}
+.bookcard .bc-page .q{font-size:12.5px;color:var(--cream);line-height:1.5}
+.bookcard .bc-page .p{font-size:12px;color:var(--ok);line-height:1.6;margin-top:4px}
+.bookcard .bc-page .m{font-size:10.5px;color:#8a7562;margin-top:4px;font-variant-numeric:tabular-nums}
+.bookcard .bc-empty{padding:26px 8px;text-align:center;font-size:12px;color:var(--cream-dim);line-height:1.9}
+.bookcard .bc-ft{padding:11px 16px;border-top:2px solid var(--line);display:flex;gap:9px;justify-content:flex-end}
+
+/* ---- 飞行层：动画期间书从面板里飞出来，越过场景再落回书柜 ----
+   必须放在 .todo 外面（那样才不受 overflow 裁切），所以单独一层 */
+#flyLayer{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:visible;
+  perspective:900px;perspective-origin:50% 35%}
+.flyer{position:fixed;left:0;top:0;transform-origin:center center;will-change:transform,opacity;
+  backface-visibility:hidden;pointer-events:none}
+.flyer svg{display:block;filter:drop-shadow(4px 6px 9px rgba(0,0,0,.6))}
+/* 落架时的一圈光晕与微尘 */
+.fly-dust{position:fixed;width:5px;height:5px;border-radius:50%;background:rgba(255,224,170,.9);
+  pointer-events:none;will-change:transform,opacity}
 
 /* ============ 右侧栏 ============ */
 .sidebar{
@@ -342,6 +456,62 @@ body{
 .pomo .time{font-size:30px;letter-spacing:3px;color:var(--amber);font-variant-numeric:tabular-nums;min-width:112px;text-align:center}
 .pomo .lbl{font-size:11px;color:var(--cream-dim);letter-spacing:2px;margin-top:2px;text-align:center}
 
+/* ============ 白噪音（全部用 Web Audio 合成，不加载任何音频文件） ============ */
+/* 工具栏按钮正在出声时亮起来，一眼能看见「现在有背景音」 */
+.topbar .icon-btn.on{border-color:var(--amber);color:var(--amber);background:rgba(255,200,97,.14)}
+.topbar .icon-btn.on::after{
+  content:'';position:absolute;right:4px;bottom:4px;width:6px;height:6px;
+  background:var(--ok);border-radius:50%;animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* 白噪音面板挂在右上角工具栏下面：番茄钟在底部中间，两个面板不打架 */
+.noise{
+  position:fixed;right:22px;top:82px;width:344px;max-width:92vw;
+  transform:translateY(-14px) scale(.96);transform-origin:top right;
+  opacity:0;visibility:hidden;pointer-events:none;
+  z-index:62;background:var(--panel-2);border:3px solid var(--line);
+  box-shadow:6px 6px 0 rgba(0,0,0,.5);
+  transition:transform .26s cubic-bezier(.34,1.4,.64,1),opacity .2s,visibility .2s;
+}
+.noise.open{transform:none;opacity:1;visibility:visible;pointer-events:auto}
+.noise-hd{
+  padding:10px 14px;border-bottom:2px solid var(--line);
+  font-size:13px;letter-spacing:2px;color:var(--amber);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.noise-body{padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.noise-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.noise-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 2px;cursor:pointer;
+  background:rgba(20,14,11,.6);border:2px solid var(--line);color:var(--cream);
+  font-family:inherit;font-size:11px;letter-spacing:1px;
+  transition:background .15s,border-color .15s,color .15s,transform .12s;
+}
+.noise-btn .ic{font-size:16px;line-height:1}
+.noise-btn:hover{background:#5a3f2e;border-color:var(--amber);color:var(--amber)}
+.noise-btn:active{transform:scale(.95)}
+.noise-btn.on{border-color:var(--amber);background:rgba(255,200,97,.14);color:var(--amber)}
+.noise-row{display:flex;align-items:center;gap:10px}
+.noise-row .tag{font-size:11px;color:var(--cream-dim);letter-spacing:1px;white-space:nowrap}
+.noise-row .pick{flex:1;text-align:center;font-size:12px;color:var(--amber)}
+.noise-row input[type=range]{
+  flex:1;-webkit-appearance:none;appearance:none;height:6px;
+  background:rgba(0,0,0,.45);border:1px solid var(--line);outline:none;cursor:pointer;
+}
+.noise-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;background:var(--amber);
+  border:1px solid #6b4a22;cursor:pointer;
+}
+.noise-row input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;background:var(--amber);border:1px solid #6b4a22;cursor:pointer;border-radius:0;
+}
+.noise-row .val{font-size:11px;color:var(--cream-dim);width:30px;text-align:right;font-variant-numeric:tabular-nums}
+.noise-cb{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--cream-dim);cursor:pointer;letter-spacing:.5px}
+.noise-cb input{accent-color:var(--amber);width:14px;height:14px;cursor:pointer}
+.noise-hint{font-size:11px;color:#8a7562;line-height:1.5}
+
 /* 提示条 */
 .toast{
   position:fixed;left:50%;top:24px;z-index:90;
@@ -383,19 +553,73 @@ body{
 <!-- ============ 右上角工具栏 ============ -->
 <div class="topbar">
   <button class="icon-btn" id="tbVault" title="疑问库">📚<span class="badge" id="vaultBadge"></span></button>
+  <button class="icon-btn" id="tbSound" title="白噪音">🎧</button>
   <button class="icon-btn" id="tbPomo" title="番茄钟">🍅</button>
   <button class="icon-btn" id="tbSetting" title="接口设置">⚙</button>
 </div>
 
-<!-- ============ To-Do ============ -->
-<aside class="todo">
-  <div class="todo-hd"><span>TO-DO LIST</span><span class="cnt" id="todoCnt"></span></div>
-  <div class="todo-body" id="todoBody"></div>
-  <div class="todo-add">
-    <input id="todoInput" placeholder="添加一件事，回车确认…" maxlength="60">
-    <button id="todoAdd" title="添加">＋</button>
+<!-- ============ 书架（任务即书籍，贴在背景书柜上）============ -->
+<aside class="todo" id="shelfPanel">
+  <div class="todo-hd">
+    <span>书 架</span>
+    <span class="cnt" id="todoCnt"></span>
+    <button class="hd-btn" id="shelfStackBtn" title="读过的书">▤</button>
+    <button class="hd-btn" id="shelfDrawerBtn" title="展开/收起 读书笔记与加书">🗄</button>
+  </div>
+  <!-- 书直接站在背景层板上；这一层只用来放「读过的书」那摞横躺的 -->
+  <div class="shelf" id="shelf"></div>
+  <!-- 抽屉：阅读位（正在读的那本）+ 加书 -->
+  <div class="todo-drawer" id="todoDrawer">
+    <div class="reading" id="reading">
+      <div class="r-top">
+        <span class="r-spine" id="readingSpine"></span>
+        <span class="r-dot"></span>
+        <span class="r-title" id="readingTitle"></span>
+      </div>
+      <div class="r-meta" id="readingMeta"></div>
+      <div class="r-acts">
+        <button class="btn sm ghost" id="readingPagesBtn">翻书 ▾</button>
+        <button class="btn sm ghost" id="readingPut">合上放回</button>
+        <button class="btn sm" id="readingDone">读完了</button>
+      </div>
+      <div class="r-pages" id="readingPages"></div>
+    </div>
+    <!-- 加一本书＝加一件任务 -->
+    <div class="todo-add">
+      <input id="todoInput" placeholder="写下一个任务＝放一本新书…" maxlength="60">
+      <button id="todoAdd" title="上架">＋</button>
+    </div>
   </div>
 </aside>
+
+<!-- 读过的书（横躺一摞） -->
+<div class="mask" id="stackMask">
+  <div class="modal">
+    <div class="modal-hd"><span>读 完 的 书</span><button class="icon-btn" id="stackClose">✕</button></div>
+    <div class="modal-body" id="stackBody"></div>
+    <div class="modal-ft"><button class="btn" id="stackOk">知道了</button></div>
+  </div>
+</div>
+
+<!-- 书页详情 -->
+<div class="bookmask" id="bookMask">
+  <div class="bookcard">
+    <div class="bc-hd">
+      <span class="t" id="bcTitle"></span>
+      <button class="icon-btn" id="bcClose">✕</button>
+    </div>
+    <div class="bc-meta" id="bcMeta"></div>
+    <div class="bc-body" id="bcBody"></div>
+    <div class="bc-ft">
+      <button class="btn ghost sm" id="bcDiscard">退掉这本书</button>
+      <button class="btn ghost sm" id="bcClose2">关上</button>
+      <button class="btn sm" id="bcFinish">读完了</button>
+    </div>
+  </div>
+</div>
+
+<!-- 飞行层：动画期间书飞过场景（不受面板裁切） -->
+<div id="flyLayer"></div>
 
 <!-- ============ 侧栏把手 ============ -->
 <div class="sb-handle" id="sbHandle">临时对话</div>
@@ -424,10 +648,38 @@ body{
     <span class="title">疑问库</span>
     <span class="vault-cnt" id="vaultCnt"></span>
     <button class="btn sm" id="vaultReviewBtn">开始复习</button>
+    <button class="icon-btn" id="vaultBackup" title="备份 / 恢复">💾</button>
     <button class="icon-btn" id="vaultClose">✕</button>
   </div>
   <div class="vault-body" id="vaultBody"></div>
 </aside>
+
+<!-- ============ 数据备份（换电脑、清缓存前先导一份） ============ -->
+<div class="mask" id="bakMask">
+  <div class="modal">
+    <div class="modal-hd"><span>数 据 备 份</span><button class="icon-btn" id="bakClose">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>这些数据只存在当前浏览器里</label>
+        <span class="hint" id="bakStat">正在统计…</span>
+      </div>
+      <div class="field">
+        <label>导出</label>
+        <span class="hint">把疑问库、待办、对话记录、白噪音偏好打包成一个 JSON 文件下载下来。
+          <b>不含 API Key</b>——Key 永远不出这台机器。</span>
+      </div>
+      <div class="field">
+        <label>导入</label>
+        <span class="hint">选一个之前导出的 JSON，恢复疑问库和待办。<b>会覆盖当前疑问库</b>，建议先导出一份。</span>
+      </div>
+      <input type="file" id="bakFile" accept="application/json,.json" style="display:none">
+    </div>
+    <div class="modal-ft">
+      <button class="btn ghost" id="bakImport">选择文件导入</button>
+      <button class="btn" id="bakExport">导出 JSON</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ 设置 ============ -->
 <div class="mask" id="mask">
@@ -470,6 +722,34 @@ body{
   <button class="icon-btn" id="pomoClose">✕</button>
 </div>
 
+<!-- ============ 白噪音（Web Audio 实时合成，不用任何音频文件） ============ -->
+<div class="noise" id="noise">
+  <div class="noise-hd">
+    <span>白 噪 音</span>
+    <button class="icon-btn" id="noiseClose">✕</button>
+  </div>
+  <div class="noise-body">
+    <div class="noise-grid" id="noiseGrid"></div>
+    <div class="noise-row">
+      <span class="tag">音量</span>
+      <input type="range" id="noiseVol" min="0" max="100" step="1" value="45">
+      <span class="val" id="noiseVolVal">45</span>
+    </div>
+    <div class="noise-row">
+      <span class="tag">当前</span>
+      <span class="pick" id="noisePick">未开启</span>
+      <button class="btn sm" id="noiseStop">停止</button>
+    </div>
+    <label class="noise-cb">
+      <input type="checkbox" id="noiseAuto">
+      <span>番茄钟开始时自动播放，结束时自动停</span>
+    </label>
+    <div class="noise-hint">
+      声音是浏览器现场合成的，不联网、不占存储；音量只存在你自己这台机器上。
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -488,58 +768,627 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 1900);
 }
 
-/* ================= To-Do ================= */
+/* ================= 任务即书籍（书架） =================
+   待办不再是清单里的一行字，而是书架上的一本书：
+     新增任务 → 书架上多一本竖插的书（书脊宽窄 = 内容多少）
+     开始读   → 书从架上抽下来、落到「阅读位」摊开，同时开始计时
+     读的时候在「临时对话」问的问题，AI 提炼成要点写进这本书
+     读完     → 播放参考视频里那三拍（Z 轴流动 → 落位转身 → 错峰展开）的反向，
+                把书插回它原来的位置，然后在书脊上留一道金线
+   数据在 localStorage.study_books；老的 study_todos 会自动迁移，一条都不丢。
+   ------------------------------------------------------------------ */
+/* 待办数据（键名仍是 study_todos，老数据一条不丢；书只是它的「壳」） */
 let todos = LS.get('study_todos', [
   { id: 1, text: '背 20 个生物名词', done: false },
   { id: 2, text: '订正昨天的错题', done: false },
   { id: 3, text: '预习免疫调节', done: true }
 ]);
-
-function renderTodos() {
-  const body = $('todoBody');
-  if (!todos.length) {
-    body.innerHTML = '<div class="todo-empty">还没有待办，加一件吧</div>';
-  } else {
-    body.innerHTML = todos.map(t => `
-      <div class="todo-item ${t.done ? 'done' : ''}" data-id="${t.id}">
-        <div class="box" data-act="toggle"></div>
-        <div class="txt">${esc(t.text)}</div>
-        <div class="del" data-act="del">✕</div>
-      </div>`).join('');
-  }
-  const left = todos.filter(t => !t.done).length;
-  $('todoCnt').textContent = todos.length ? `${left}/${todos.length}` : '';
-  LS.set('study_todos', todos);
-}
-
+/* HTML 转义：书脊 tooltip、书页要点、已完成列表都要用 */
 function esc(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+const BOOKS_KEY = 'study_books';
+const MAX_PAGES = 30;          // 每本书最多留几条要点（只用点，不存问答全文）
+/* 书脊颜色：全部取自背景书柜的调色板（暗红 / 藏蓝 / 墨绿 / 土黄），
+   这样书站在背景层板上不会显得是「外来的 UI」 */
+const BOOK_COLORS = ['#8f3a2c', '#2f4a70', '#3d6b4a', '#7a4a2a', '#6b3f5c', '#8a6a2a', '#3f5f6b', '#7a3a44', '#556b32'];
+
+/* DSH 的测试出口名是 __scene，当年用过的书是「斯堪的纳维亚」…… 总之别叫同名 */
+const getScene = () => window.__scene || window.__sceneCompat || null;
+
+function bookColor(id) {
+  let h = 0;
+  for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return BOOK_COLORS[h % BOOK_COLORS.length];
+}
+function bookEsc(s) { return esc(s == null ? '' : s); }
+function fmtMin(ms) {
+  const m = Math.round((ms || 0) / 60000);
+  if (m < 1) return '不到 1 分钟';
+  if (m < 60) return m + ' 分钟';
+  return Math.floor(m / 60) + ' 小时 ' + (m % 60) + ' 分';
+}
+function fmtClock(t) {
+  const d = new Date(t);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+let books = LS.get(BOOKS_KEY, []);
+const saveBooks = () => LS.set(BOOKS_KEY, books);
+
+/* 书脊宽窄：由「书名多长 + 读了多少 + 记了几条要点」一起决定。
+   太薄就不像书了，所以下限给到 20px；上限 40px 保证一层塞得下四五本 */
+function recomputeThick(b) {
+  const titleW = (b.title || '').length * 2.1;
+  const byPages = (b.pages ? b.pages.length : 0) * 1.8;
+  const byTime = Math.min(8, (b.readMs || 0) / 900000);          // 每 15 分钟厚 1px，最多 8
+  b.thick = Math.round(Math.max(20, Math.min(40, 16 + titleW * 0.42 + byPages + byTime)));
+}
+/* 上架时找一个空位。背景书柜真正能用的地方只有第 2 层左上方那一块，
+   所以书位分两行（row 1/2），每行按 idx 顺着排；排满了就叠到下一行，
+   两行都满了就从行首开始往右挤（视觉上像书越买越多）。 */
+const ROW_CAP = 6;             // 每行最多排几本，多了换行
+function findSlot() {
+  const used = new Set(books.filter(b => b.state !== 'finished').map(b => (b.slot ? b.slot.row + ':' + b.slot.idx : '')));
+  for (let r = 1; r <= 2; r++) {
+    for (let i = 0; i < ROW_CAP; i++) if (!used.has(r + ':' + i)) return { row: r, idx: i };
+  }
+  return { row: 1 + Math.floor(books.length / ROW_CAP) % 2, idx: books.length % ROW_CAP };
+}
+function ensureBook(t) {
+  let b = books.find(x => x.todoId === t.id);
+  if (b) return b;
+  b = {
+    id: 'b' + t.id, todoId: t.id, title: t.text, hue: bookColor('b' + t.id),
+    thick: 22, state: 'onShelf', slot: findSlot(),
+    readMs: 0, sessions: [], pages: [], createdAt: Date.now(), finishedAt: 0
+  };
+  recomputeThick(b);          // 立刻按书名长度算厚度，别留在默认值上
+  books.push(b);
+  return b;
+}
+function migrate() {
+  todos.forEach(t => {
+    const b = ensureBook(t);
+    if (t.done && b.state !== 'finished') { b.state = 'finished'; b.finishedAt = b.finishedAt || Date.now(); }
+  });
+  // 每次启动重算一遍厚度：改了算法、或者老数据没有 thick 字段，都能自动跟上
+  books.forEach(recomputeThick);
+  saveBooks();
+}
+
+/* ---------- 书脊 / 横躺的书的 SVG ---------- */
+function spineSVG(b, opts) {
+  const o = opts || {};
+  const w = Math.round(b.thick), h = o.h || 54;
+  const uid = 'g' + b.id + (o.h || 54);
+  const x = Math.max(2, w * 0.2);
+  // 书脊上的书名：竖排。只有书够宽、字放得下才写，不然一排花字比不写还难看
+  let label = '';
+  const maxChars = Math.floor((h - 16) / 8.6);
+  if (w >= 22 && (b.title || '').length) {
+    const txt = (b.title || '').slice(0, maxChars);
+    label = '<text x="' + (w * 0.62).toFixed(1) + '" y="' + (h - 8) + '" fill="rgba(255,226,180,.90)"'
+      + ' font-size="9.5" font-family="PingFang SC, Microsoft YaHei, sans-serif" letter-spacing="0.5"'
+      + ' transform="rotate(-90 ' + (w * 0.62).toFixed(1) + ' ' + (h - 8) + ')"'
+      + ' style="writing-mode:horizontal-tb">' + bookEsc(txt) + '</text>';
+  }
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<defs><linearGradient id="' + uid + '" x1="0" y1="0" x2="1" y2="0">'
+    + '<stop offset="0" stop-color="' + b.hue + '" stop-opacity=".55"/>'
+    + '<stop offset=".18" stop-color="' + b.hue + '"/>'
+    + '<stop offset=".62" stop-color="' + b.hue + '"/>'
+    + '<stop offset="1" stop-color="#000" stop-opacity=".42"/>'
+    + '</linearGradient></defs>'
+    + '<rect x=".5" y=".5" width="' + (w - 1) + '" height="' + (h - 1) + '" fill="url(#' + uid + ')" stroke="rgba(0,0,0,.45)"/>'
+    + '<line x1="' + x.toFixed(1) + '" y1="3" x2="' + x.toFixed(1) + '" y2="' + (h - 3) + '" stroke="rgba(246,232,210,.30)" stroke-width="1"/>'
+    + '<line x1="' + x.toFixed(1) + '" y1="11" x2="' + x.toFixed(1) + '" y2="' + (h - 11) + '" stroke="rgba(246,232,210,.20)" stroke-width="2"/>'
+    + '<rect x="1" y="5" width="' + (w - 2) + '" height="4" fill="rgba(246,232,210,.26)"/>'
+    + '<rect x="1" y="' + (h - 9) + '" width="' + (w - 2) + '" height="5" fill="rgba(246,232,210,.20)"/>'
+    + label
+    + (b.state === 'reading' ? '<rect data-reading="1" x="1" y="' + (h - 16) + '" width="' + (w - 2) + '" height="2.5" fill="#ffc861"/>' : '')
+    + (b.state === 'finished' ? '<rect data-finished="1" x="1" y="12" width="' + (w - 2) + '" height="2" fill="#8fbf6a"/>' : '')
+    /* 最后压一道 2px 的深色描边 + 顶部高光：
+       背景那面书柜已经画满了书，我们的书只有描边够硬才不会「糊」在一起认不出来 */
+    + '<rect x="1" y="1" width="' + (w - 2) + '" height="' + (h - 2) + '" fill="none" stroke="rgba(12,6,4,.85)" stroke-width="2"/>'
+    + '<rect x="2.5" y="2.5" width="' + (w - 5) + '" height="1.5" fill="rgba(255,236,200,.45)"/>'
+    + '</svg>';
+}
+function flatSVG(b, w) {
+  const h = Math.max(8, Math.round(b.thick * 0.42));
+  const uid = 'f' + b.id + '_' + w;
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">'
+    + '<defs><linearGradient id="' + uid + '" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0" stop-color="#f6e8d2" stop-opacity=".9"/><stop offset="1" stop-color="#b9a184"/>'
+    + '</linearGradient></defs>'
+    + '<rect x=".5" y=".5" width="' + (w - 1) + '" height="' + (h - 1) + '" fill="url(#' + uid + ')" stroke="rgba(0,0,0,.45)"/>'
+    + '<rect x="2" y="1" width="' + (w - 4) + '" height="2.5" fill="' + b.hue + '"/>'          // 书脊那条色带
+    + '<rect x="1" y="' + (h - 4) + '" width="' + (w - 2) + '" height="2" fill="#8fbf6a"/>'    // 绿线 = 读完了
+    + '</svg>';
+}
+
+/* ---------- 渲染书架 ----------
+   书不是画在面板里的，而是**站在背景书柜第 2 层左侧那块空位上**：
+   层板在背景里是右端向下斜的（约 +1.6°），所以整行容器跟着转同样的角度，
+   书脊就自然「贴」在那块木板上。两行书摞在同一块层板上（第二行靠前一点、略高一点）。
+   每个书位用百分比定位，换分辨率也不会跑偏。 */
+/* 书位两行：bottom 是「行底边」——书是 bottom:0 绝对定位的，所以底边正好落在层板上。
+   两个行差 1.2% 高度 + 1% 横向错位，做出前后两排的层次。 */
+const SHELF_BOOKS = [
+  { left: 1.3, bottom: 73.9, maxW: 12.6 },   // 前排：底边压在同层背景书的那条基线附近
+  { left: 2.7, bottom: 75.4, maxW: 11.2 }    // 后排：往里挪一点、略高一点，像站在后面
+];
+let readingId = null;
+function renderShelf() {
+  const el = $('shelf');
+  // 正在读的那本也留在架上（隐身占位），放回动画需要它的落点
+  const onShelf = books.filter(b => b.state === 'onShelf' || b.state === 'reading');
+  const finished = books.filter(b => b.state === 'finished');
+  const total = todos.length;
+  const leftCnt = todos.filter(t => !t.done).length;
+  $('todoCnt').textContent = total ? leftCnt + '/' + total + ' 本' : '';
+
+  // 读过的书横躺一摞，摆在书架上方那层空档
+  let stackHtml = '';
+  if (finished.length) {
+    const shown = finished.slice(-7);
+    let x = 0;
+    stackHtml = '<div class="books-stack" data-act="stack" title="读过的书（点开看）">'
+      + shown.map(b => {
+        const w = Math.max(30, Math.min(70, 26 + (b.title || '').length * 2));
+        const h = Math.max(8, Math.round(b.thick * 0.42));
+        const item = '<div class="stack-book" data-book="' + b.id + '" title="' + bookEsc(b.title)
+          + '" style="left:' + x + 'px;bottom:' + (x % 3) + 'px">' + flatSVG(b, w) + '</div>';
+        x += Math.round(w * 0.62);        // 层叠着摆，像随手一摞
+        void h;
+        return item;
+      }).join('')
+      + '<span class="row-tag">读完 ' + finished.length + ' 本</span></div>';
+  }
+
+  // 两行书位：按书位编号分配，超过一行宽度就换行
+  const rowsHtml = SHELF_BOOKS.map((row, ri) => {
+    const rowBooks = onShelf.filter(b => ((b.slot ? b.slot.row : 1) - 1) % SHELF_BOOKS.length === ri)
+      .sort((a, b) => (a.slot ? a.slot.idx : 0) - (b.slot ? b.slot.idx : 0));
+    let used = 0;
+    const items = [];
+    for (const b of rowBooks) {
+      const w = Math.max(0.85, Math.min(2.2, b.thick / 15));      // 书脊宽度：按厚度换算成 vw
+      if (used + w > row.maxW) break;                              // 这一行满了，剩下的留给下一行
+      used += w + 0.05;
+      items.push('<div class="book' + (b.state === 'reading' ? ' reading away' : '')
+        + '" data-book="' + b.id + '" title="' + bookEsc(b.title)
+        + '" style="left:' + used.toFixed(2) + 'vw;width:' + w.toFixed(2) + 'vw">'
+        + spineSVG(b, { h: 48 }) + '</div>');
+    }
+    return '<div class="shelf-books" style="left:' + row.left + '%;bottom:' + row.bottom + '%">' + items.join('') + '</div>';
+  }).join('');
+
+  if (!onShelf.length && !finished.length) {
+    el.innerHTML = stackHtml + '<div class="shelf-empty" style="bottom:71%">书架是空的。<br>点右上角 🗄 写下第一个任务，<br>就是放一本新书上去。</div>';
+    return;
+  }
+  el.innerHTML = stackHtml + rowsHtml;
+}
+
+/* ---------- 渲染阅读位 ---------- */
+let tickTimer = null;
+function renderReading() {
+  const b = readingId ? books.find(x => x.id === readingId) : null;
+  const box = $('reading');
+  if (!b) {
+    box.classList.remove('on');
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    return;
+  }
+  box.classList.add('on');
+  $('readingTitle').textContent = b.title;
+  $('readingSpine').innerHTML = spineSVG(b, { h: 34 });   // 桌上一直摆着这本书
+  const upd = () => {
+    const cur = b.readMs + (b._t0 ? Date.now() - b._t0 : 0);
+    $('readingMeta').innerHTML = '<span>已读 ' + fmtMin(cur) + '</span><span>' + (b.pages.length ? b.pages.length + ' 条要点' : '还没有写进东西') + '</span>'
+      + '<span>开始于 ' + fmtClock(b._t0 || Date.now()) + '</span>';
+  };
+  upd();
+  if (tickTimer) clearInterval(tickTimer);
+  tickTimer = setInterval(upd, 5000);
+  renderPages(b);
+}
+function renderPages(b) {
+  const box = $('readingPages');
+  if (!b.pages.length) {
+    box.innerHTML = '<div class="r-empty">这本书还是白的。<br>在读的时候去右边「临时对话」问问题，<br>AI 会把要点写进来。</div>';
+    return;
+  }
+  box.innerHTML = b.pages.slice(-4).reverse().map(p =>
+    '<div class="r-page"><div class="q">' + bookEsc(p.q) + '</div><div class="p">· ' + bookEsc(p.points.join('<br>· ')) + '</div></div>'
+  ).join('');
+}
+
+/* ---------- 打开 / 合上 / 读完 ---------- */
+function cloneForFly(bookEl, container) {
+  const svg = bookEl.querySelector('svg');
+  if (!svg) return null;
+  const c = svg.cloneNode(true);
+  // 放在阅读位容器里（position:absolute 的容器），坐标就以它左上角为原点 ——
+  // 之前用 fixed + 绝对屏幕坐标，量出来的位置总对不上，改成相对容器就一目了然
+  c.setAttribute('data-flying', '1');            // 只给自测用：区分「飞行中的克隆体」和架上/桌上的真书
+  c.style.cssText = 'position:absolute;left:0;top:0;transform-origin:center center;backface-visibility:hidden;will-change:transform,opacity;pointer-events:none;z-index:5';
+  (container || $('flyLayer')).appendChild(c);
+  return c;
+}
+function dustAt(x, y) {
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    d.className = 'fly-dust';
+    d.style.left = x + 'px';
+    d.style.top = y + 'px';
+    $('flyLayer').appendChild(d);
+    d.animate([
+      { transform: 'translate(0,0) scale(1)', opacity: .95 },
+      { transform: 'translate(' + (-16 + Math.random() * 32) + 'px,' + (-10 - Math.random() * 18) + 'px) scale(.3)', opacity: 0 }
+    ], { duration: 420 + Math.random() * 220, easing: 'cubic-bezier(.2,.7,.3,1)' }).onfinish = () => d.remove();
+  }
+}
+
+/* 参考视频那三拍（抽帧存 dev/ref/）：
+   ① Z 轴流动：书沿弧线飞出来，近大远小、带一点侧倾（不是平面平移）
+   ② 落位转身：接近落点时绕 Y 轴转正、overshoot 一点再回落
+   ③ 错峰展开：放下之后，阅读位的内容一行一行依次浮现
+   放回时反着走一遍，最后插回它在书架上的原位。 */
+function flyToReading(bookEl, b) {
+  const reading = $('reading');
+  reading.classList.add('on');
+  void reading.offsetHeight;         // 必须先让它真正布局出来再量坐标：
+                                     // 「开始读」时阅读位还是 display:none，量出来是全 0，
+                                     // 书就会飞到页面左上角去（踩过）
+  const rect = reading.getBoundingClientRect();
+  const clone = cloneForFly(bookEl, reading);   // 克隆体放进阅读位容器，坐标以容器左上角为原点
+  // 立刻让原书脊隐身：不然飞行途中架上一本、空中一本，会重影
+  bookEl.style.visibility = 'hidden';
+  const src = bookEl.getBoundingClientRect();
+  if (!clone) { finishFlyIn(b); return; }
+  const w = Math.round(src.width), h = Math.round(src.height);
+  clone.style.width = w + 'px';
+  clone.style.height = h + 'px';
+  // 落点：阅读位上「躺着的那本书」的位置，飞行结束正好接上它
+  const sp = $('readingSpine').getBoundingClientRect();
+  const toX = Math.max(8, Math.round(sp.left - rect.left));
+  const toY = Math.max(8, Math.round(sp.bottom - rect.top - h));   // 让书脊底边和占位底边对齐
+  window.__fly = { 落点: toX + ',' + toY, 书脊尺寸: w + 'x' + h, 容器: '阅读位', 阅读位尺寸: Math.round(rect.width) + 'x' + Math.round(rect.height) };
+  /* 关键帧：从「阅读位外面」（书架方向）飞进来。
+     起点用它相对容器的偏移：(src.left - rect.left, src.top - rect.top) */
+  const fx = Math.round(src.left - rect.left);
+  const fy = Math.round(src.top - rect.top);
+  const anim = clone.animate([
+    { transform: 'translate(' + fx + 'px,' + fy + 'px) rotateY(0deg) scale(1)', opacity: 1, offset: 0 },
+    { transform: 'translate(' + (fx * 0.9) + 'px,' + (fy * 0.86) + 'px) rotateY(20deg) scale(1.1)', opacity: 1, offset: 0.3 },
+    { transform: 'translate(' + (fx * 0.5) + 'px,' + (fy * 0.48) + 'px) rotateY(56deg) scale(1.22)', opacity: 1, offset: 0.58 },
+    { transform: 'translate(' + (fx * 0.16) + 'px,' + (fy * 0.16) + 'px) rotateY(112deg) scale(1.12)', opacity: 1, offset: 0.84 },
+    { transform: 'translate(' + toX + 'px,' + toY + 'px) rotateY(180deg) scale(1)', opacity: 1, offset: 1 }
+  ], { duration: 620, easing: 'cubic-bezier(.36,.06,.2,1)' });
+  const land = () => {
+    if (clone.dataset.landed) return;            // 兜底：finish 事件偶尔不触发
+    clone.dataset.landed = '1';
+    clone.remove();
+    dustAt(rect.left + toX, rect.top + toY + h * 0.5);
+    finishFlyIn(b);
+  };
+  anim.addEventListener('finish', land);
+  anim.addEventListener('cancel', land);
+  setTimeout(land, 620 + 260);                   // 双保险
+}
+function finishFlyIn(b) {
+  readingId = b.id;
+  b.state = 'reading';
+  b._t0 = Date.now();
+  b._base = b.readMs;
+  b._lastPersist = Date.now();
+  saveBooks();
+  toggleDrawer(true);            // 落位就把抽屉拉开：书桌就是阅读位，得看得见
+  renderShelf();
+  renderReading();
+  // ③ 错峰展开
+  const box = $('reading');
+  ['.r-top', '.r-meta', '.r-acts', '.r-pages'].forEach((sel, i) => {
+    const el = box.querySelector(sel);
+    if (el) el.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 260, delay: i * 70, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'backwards' });
+  });
+  toast('开始读《' + b.title + '》');
+}
+function startReading(bookId) {
+  const b = books.find(x => x.id === bookId);
+  if (!b || b.state === 'finished') { openBookCard(bookId); return; }
+  if (readingId === b.id) { $('readingPages').classList.toggle('on'); return; }
+  if (readingId) closeReading();               // 一次只读一本
+  const el = document.querySelector('.book[data-book="' + b.id + '"]');
+  if (!el) { readingId = b.id; b.state = 'reading'; b._t0 = Date.now(); b._base = b.readMs; b._lastPersist = Date.now(); saveBooks(); renderShelf(); renderReading(); return; }
+  flyToReading(el, b);
+}
+function closeReading() {
+  const b = books.find(x => x.id === readingId);
+  if (!b) return;
+  const el = document.querySelector('.book[data-book="' + b.id + '"]');
+  if (el) flyBackToShelf(el, b, 'shelf');
+  else { commitReading(b, 'shelf'); }
+}
+function finishReading() {
+  const b = books.find(x => x.id === readingId);
+  if (!b) return;
+  const el = document.querySelector('.book[data-book="' + b.id + '"]');
+  if (el) flyBackToShelf(el, b, 'finished');
+  else { commitReading(b, 'finished'); }
+}
+function commitReading(b, mode) {
+  if (b._t0) { b.readMs = (b._base || 0) + (Date.now() - b._t0); b.sessions.push({ from: b._t0, to: Date.now(), ms: Date.now() - b._t0 }); }
+  b._t0 = 0;
+  recomputeThick(b);
+  if (mode === 'finished') {
+    b.state = 'finished'; b.finishedAt = Date.now();
+    setTodoDone(b.todoId, true);
+    toast('读完一本：《' + b.title + '》，用时 ' + fmtMin(b.readMs) + ' 🎉');
+  } else {
+    b.state = 'onShelf';
+    toast('已放回书架，这本书读了 ' + fmtMin(b.readMs));
+  }
+  readingId = null;
+  saveBooks();
+  renderShelf();
+  renderReading();
+}
+
+/* 放回书柜：反向三拍 —— 从阅读位飞回原位，转身插进去，落架时压一下并冒一点灰 */
+function flyBackToShelf(bookEl, b, mode) {
+  const readingEl = $('reading');
+  const rect = readingEl.getBoundingClientRect();
+  void readingEl.offsetHeight;
+  const to = bookEl.getBoundingClientRect();
+  const clone = cloneForFly(bookEl, readingEl);   // 同样以阅读位容器为原点
+  if (!clone) { commitReading(b, mode); return; }
+  const w = Math.max(10, Math.round(to.width));
+  const h = Math.max(30, Math.round(to.height));
+  clone.style.width = w + 'px';
+  clone.style.height = h + 'px';
+  // 起点：这本书现在「躺在阅读位上」的位置；终点：它在书架上的槽位（都换算成容器坐标）
+  const toX = Math.round(to.left - rect.left), toY = Math.round(to.top - rect.top);
+  const fromX = 12;
+  const fromY = Math.max(8, Math.round($('readingSpine').getBoundingClientRect().bottom - rect.top - h));
+  window.__fly = { 起点: fromX + ',' + fromY, 终点: toX + ',' + toY, 方向: mode === 'finished' ? '读完归架' : '放回书架' };
+  bookEl.style.visibility = 'hidden';          // 原点立刻隐身，只留飞行中的那一本
+  const up = 16;                               // 先抬起一点再飞
+  const legs = [
+    { transform: 'translate(' + fromX + 'px,' + (fromY - up) + 'px) rotateY(180deg) scale(1.06)', opacity: 1, offset: 0 },
+    { transform: 'translate(' + Math.round(fromX + (toX - fromX) * 0.3) + 'px,' + Math.round(fromY - up + (toY - fromY + up) * 0.28) + 'px) rotateY(124deg) scale(1.18)', opacity: 1, offset: 0.3 },
+    { transform: 'translate(' + Math.round(fromX + (toX - fromX) * 0.68) + 'px,' + Math.round(fromY - up + (toY - fromY + up) * 0.66) + 'px) rotateY(60deg) scale(1.14)', opacity: 1, offset: 0.62 },
+    { transform: 'translate(' + toX + 'px,' + (toY - 5) + 'px) rotateY(0deg) scale(1.08)', opacity: 1, offset: 0.86 },
+    { transform: 'translate(' + toX + 'px,' + toY + 'px) rotateY(0deg) scale(1)', opacity: 1, offset: 1 }
+  ];
+  const stage2 = () => {
+    if (clone.dataset.landed) return;
+    clone.dataset.landed = '1';
+    dustAt(to.left + w / 2, to.top + h);
+    clone.remove();
+    commitReading(b, mode);
+    const el2 = document.querySelector('.book[data-book="' + b.id + '"]');
+    if (el2) {
+      if (mode === 'finished') el2.classList.add('pulse');
+      else el2.animate([{ transform: 'scale(1,1)' }, { transform: 'scale(1.06,.94)' }, { transform: 'scale(1,1)' }], { duration: 260, easing: 'ease-out' });
+    }
+  };
+  if (mode === 'shelf') {
+    // 放回书架：先「抽高」再飞回去，像从手里举起来插回架上
+    const up1 = clone.animate([{ transform: 'translate(' + fromX + 'px,' + fromY + 'px) scale(1)', opacity: 1 },
+                   { transform: 'translate(' + fromX + 'px,' + (fromY - up) + 'px) scale(1.06)', opacity: 1 }],
+      { duration: 150, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    up1.addEventListener('finish', () => {
+      clone.animate(legs, { duration: 600, easing: 'cubic-bezier(.34,.05,.2,1)' }).addEventListener('finish', stage2);
+      setTimeout(stage2, 600 + 300);
+    });
+    setTimeout(stage2, 150 + 600 + 600);
+  } else {
+    clone.animate(legs, { duration: 720, easing: 'cubic-bezier(.34,.05,.2,1)' }).addEventListener('finish', stage2);
+    setTimeout(stage2, 720 + 400);
+  }
+}
+
+/* ---------- 书页详情 ---------- */
+let cardId = null;
+function openBookCard(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) return;
+  cardId = id;
+  $('bcTitle').textContent = '《' + b.title + '》';
+  const st = b.state === 'finished' ? '已读完' : (b.state === 'reading' ? '正在读' : '在架上');
+  $('bcMeta').innerHTML = '<span>' + st + '</span><span>累计 ' + fmtMin(b.readMs) + '</span><span>' + b.pages.length + ' 条要点</span>'
+    + '<span>上架于 ' + new Date(b.createdAt).toLocaleDateString() + '</span>'
+    + (b.finishedAt ? '<span>读完于 ' + new Date(b.finishedAt).toLocaleDateString() + '</span>' : '');
+  $('bcBody').innerHTML = b.pages.length
+    ? b.pages.slice().reverse().map(p =>
+        '<div class="bc-page"><div class="q">' + bookEsc(p.q) + '</div><div class="p">· ' + bookEsc(p.points.join('<br>· ')) + '</div>'
+        + '<div class="m">' + fmtClock(p.t) + (p.tags && p.tags.length ? ' · ' + bookEsc(p.tags.join(' · ')) : '') + '</div></div>').join('')
+    : '<div class="bc-empty">这本书还是白的。<br>开始读它，然后在「临时对话」里问问题，<br>AI 会把要点写进这一本。</div>';
+  $('bcFinish').style.display = b.state === 'finished' ? 'none' : '';
+  $('bookMask').classList.add('open');
+}
+function closeBookCard() { $('bookMask').classList.remove('open'); cardId = null; }
+
+/* ---------- 写进书里的那一段（AI 提炼结果入库）---------- */
+function appendPage(b, page) {
+  b.pages.push(page);
+  if (b.pages.length > MAX_PAGES) b.pages = b.pages.slice(-MAX_PAGES);   // 只留最近的，别把 localStorage 撑爆
+  recomputeThick(b);
+  saveBooks();
+  if (readingId === b.id) { renderReading(); renderShelf(); }
+}
+/* 阅读期间提问时，给 AI 的额外指令：顺手把这轮问答提炼成一条笔记 */
+function bookNoteRule(b) {
+  return '\n\n【正在读的书】学生此刻正在读《' + b.title + '》，已读 ' + fmtMin(b.readMs) + '。'
+    + '请在标记块里额外加一个字段 note，用一句话（不超过 120 字）把这轮问答里对这本书真正有用的东西写成要点，'
+    + '像给自己写书页批注那样，用「；」分隔的小短句，不要客套话。'
+    + '如果这轮跟这本书没关系（纯闲聊、问功能怎么用），note 留空字符串。'
+    + 'note 只写提炼后的要点，绝不抄写原文。';
+}
+
+/* ---------- 与「临时对话」联动 ---------- */
+function getActiveBook() { return readingId ? books.find(x => x.id === readingId) : null; }
+/* 阅读期间提交提问：把提问当作「翻这本书」的一页，先记下问题，回答回来再补要点 */
+function noteQuestionAsked(book, text) {
+  if (!book) return null;
+  book._pending = { t: Date.now(), q: text.slice(0, 80) };
+  return book._pending;
+}
+/* AI 标记回来之后：把要点写进正在读的那本书。
+   三种情况分清楚，别混：
+     1) 模型给了 note        → 按「；」拆成要点写进去
+     2) 是知识问题但 note 空  → 退回截取回答前 120 字，并明确标注「未提炼，自动截取」，不假装是提炼的
+     3) 压根不是知识问题     → 什么都不写（闲聊、问功能怎么用不该进书里）
+   返回值：'written' | 'fallback' | 'skip' */
+function writeNoteFromReply(book, pending, note, rawReply, tag) {
+  if (!book || !pending) return 'skip';
+  const isKnowledge = !!(tag && tag.knowledge === true);
+  const n = (note == null ? '' : String(note)).trim();
+  const points = n ? n.split(/[；;]\s*/).map(s => s.trim()).filter(Boolean).slice(0, 4) : [];
+  let mode = 'written';
+  if (!points.length) {
+    if (!isKnowledge) { book._pending = null; return 'skip'; }   // 纯闲聊：不写
+    const fallback = String(rawReply || '').replace(/\s+/g, ' ').replace(/下一步：.*$/, '').trim().slice(0, 120);
+    if (!fallback) { book._pending = null; return 'skip'; }
+    points.push(fallback + '（未提炼，自动截取）');
+    mode = 'fallback';
+  }
+  appendPage(book, {
+    t: Date.now(), q: pending.q, points,
+    tags: tag && tag.subject ? [String(tag.subject)].concat(tag.point ? [String(tag.point)] : []) : [],
+    refId: tag && tag.refId ? tag.refId : '', mode
+  });
+  book._pending = null;
+  return mode;
+}
+/* 长时间阅读时，每 15 秒把时长落一次盘，防止刷新丢时间 */
+setInterval(() => {
+  const b = getActiveBook();
+  if (!b || !b._t0) return;
+  if (Date.now() - (b._lastPersist || 0) < 15000) return;
+  b.readMs = (b._base || 0) + (Date.now() - b._t0);
+  b._lastPersist = Date.now();
+  saveBooks();
+}, 5000);
+
+/* ---------- 交互绑定 ---------- */
+$('shelf').onclick = e => {
+  const stackBook = e.target.closest('.stack-book');
+  if (stackBook) { openBookCard(stackBook.dataset.book); return; }
+  if (e.target.closest('.books-stack')) { showStack(); return; }
+  const el = e.target.closest('.book');
+  if (!el) return;
+  const b = books.find(x => x.id === el.dataset.book);
+  if (!b) return;
+  if (b.state === 'reading') { $('readingPages').classList.toggle('on'); return; }
+  if (e.shiftKey) { openBookCard(b.id); return; }     // 按住 Shift 点 = 直接翻书页
+  startReading(b.id);
+};
+$('readingPut').onclick = () => closeReading();
+$('readingDone').onclick = () => finishReading();
+$('readingPagesBtn').onclick = () => $('readingPages').classList.toggle('on');
+$('bcClose').onclick = closeBookCard;
+$('bcClose2').onclick = closeBookCard;
+$('bookMask').onclick = e => { if (e.target === $('bookMask')) closeBookCard(); };
+$('bcFinish').onclick = () => { const id = cardId; closeBookCard(); readingId = id; const b = books.find(x => x.id === id); if (b) { b._t0 = 0; commitReading(b, 'finished'); } };
+$('bcDiscard').onclick = () => {
+  const id = cardId;
+  const b = books.find(x => x.id === id);
+  if (!b) return;
+  if (!confirm('把《' + b.title + '》退掉？这本书的要点和时长会一起删掉。')) return;
+  books = books.filter(x => x.id !== id);
+  todos = todos.filter(t => t.id !== b.todoId);
+  LS.set('study_todos', todos);
+  if (readingId === id) readingId = null;
+  saveBooks(); closeBookCard(); renderShelf(); renderReading();
+  toast('已经退掉这本书');
+};
+$('shelfStackBtn').onclick = () => showStack();
+/* 抽屉：收着的时候画面就是纯粹的房间 + 书架；
+   要写读书笔记、要加新书的时候才拉开（标着 🗄 的那颗钉子） */
+function toggleDrawer(force) {
+  const d = $('todoDrawer');
+  const want = force === undefined ? !d.classList.contains('open') : !!force;
+  d.classList.toggle('open', want);
+  $('shelfDrawerBtn').style.background = want ? 'linear-gradient(180deg,#c98a52,#8a4f2b)' : '';
+  return want;
+}
+$('shelfDrawerBtn').onclick = () => toggleDrawer();
+$('todoInput').addEventListener('focus', () => toggleDrawer(true));
+$('stackClose').onclick = () => $('stackMask').classList.remove('open');
+$('stackOk').onclick = () => $('stackMask').classList.remove('open');
+function showStack() {
+  const finished = books.filter(b => b.state === 'finished').sort((a, b) => b.finishedAt - a.finishedAt);
+  $('stackBody').innerHTML = finished.length
+    ? finished.map(b => '<div class="field"><label>' + bookEsc(b.title) + '</label><span class="hint">' + fmtMin(b.readMs)
+        + ' · ' + b.pages.length + ' 条要点 · 读完于 ' + new Date(b.finishedAt).toLocaleDateString()
+        + ' <a href="javascript:void 0" data-open="' + b.id + '" style="color:var(--amber)">翻一翻</a></span></div>').join('')
+    : '<div class="hint">还没有读完的书。读完一本，它就会横躺到书架最上层。</div>';
+  $('stackBody').onclick = e => { const a = e.target.closest('[data-open]'); if (a) { $('stackMask').classList.remove('open'); openBookCard(a.dataset.open); } };
+  $('stackMask').classList.add('open');
+}
+
+/* ---------- 任务的增删改（书的上架 / 状态同步）---------- */
+function setTodoDone(todoId, done) {
+  const t = todos.find(x => x.id === todoId);
+  if (!t) return;
+  t.done = done;
+  LS.set('study_todos', todos);
+  // 待办勾掉 = 这本书读完；反勾 = 重新上架
+  const b = books.find(x => x.todoId === todoId);
+  if (b) {
+    if (done && b.state !== 'finished') { b.state = 'finished'; b.finishedAt = Date.now(); }
+    if (!done && b.state === 'finished') { b.state = 'onShelf'; b.finishedAt = 0; }
+    if (b.state === 'finished' && readingId === b.id) readingId = null;
+    saveBooks();
+    renderShelf();
+    renderReading();
+  }
+}
 function addTodo() {
   const inp = $('todoInput');
   const v = inp.value.trim();
   if (!v) return;
-  todos.push({ id: Date.now(), text: v, done: false });
+  const t = { id: Date.now(), text: v, done: false };
+  todos.push(t);
+  LS.set('study_todos', todos);
+  const b = ensureBook(t);
+  saveBooks();
   inp.value = '';
-  renderTodos();
+  renderShelf();
+  // 新书上架：从输入框那个方向掉进它的槽位
+  const el = document.querySelector('.book[data-book="' + b.id + '"]');
+  if (el) {
+    el.animate([
+      { transform: 'translate(-40px,-70px) rotate(-14deg) scale(.6)', opacity: 0 },
+      { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 }
+    ], { duration: 460, easing: 'cubic-bezier(.34,1.32,.5,1)' });
+    el.classList.add('pulse');
+    setTimeout(() => el.classList.remove('pulse'), 1000);
+  }
+  toast('上架一本新书：《' + v + '》');
 }
-
+function removeBook(bookId) {
+  const b = books.find(x => x.id === bookId);
+  if (!b) return;
+  books = books.filter(x => x.id !== bookId);
+  todos = todos.filter(t => t.id !== b.todoId);
+  LS.set('study_todos', todos);
+  if (readingId === bookId) readingId = null;
+  saveBooks(); renderShelf(); renderReading();
+}
 $('todoAdd').onclick = addTodo;
 $('todoInput').onkeydown = e => { if (e.key === 'Enter') addTodo(); };
-$('todoBody').onclick = e => {
-  const item = e.target.closest('.todo-item');
-  if (!item) return;
-  const id = Number(item.dataset.id);
-  const t = todos.find(x => x.id === id);
-  if (!t) return;
-  const act = e.target.dataset.act;
-  if (act === 'toggle') { t.done = !t.done; if (t.done) toast('完成一件事，真棒 👏'); }
-  else if (act === 'del') { todos = todos.filter(x => x.id !== id); }
-  else return;
-  renderTodos();
-};
-renderTodos();
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBookCard(); });
+
+migrate();
+renderShelf();
+renderReading();
 
 /* ================= 辐射菜单 ================= */
 const scene = $('scene'), hotspot = $('hotspot'), radial = $('radial');
@@ -571,6 +1420,14 @@ document.addEventListener('click', e => {
   if (radial.classList.contains('open') && !radial.contains(e.target) && !hotspot.contains(e.target)) closeRadial();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeRadial(); closeSettings(); } });
+// N = 白噪音面板（正在输入框里打字时不要抢键）
+document.addEventListener('keydown', e => {
+  if (e.key !== 'n' && e.key !== 'N') return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (typeof toggleNoisePanel === 'function') { closeRadial(); toggleNoisePanel(); }
+});
 
 /* ================= 侧栏 ================= */
 const sidebar = $('sidebar'), sbBody = $('sbBody');
@@ -761,12 +1618,70 @@ function cfg() {
   };
 }
 
+/* ================= 本地假 AI（?ai=mock）=================
+   作用：不填 Key、不联网也能把「提问 → 提炼 → 写进书里」整条链路跑通，
+   用于开发自测和比赛现场的离线演示。它输出的是和真接口完全一样的格式
+   （正文 + 一行 <tag>{...}</tag>），所以切换真接口时下游代码一行都不用改。
+   ------------------------------------------------------------------ */
+const MOCK_MODE = new URLSearchParams(location.search).get('ai') === 'mock';
+
+function mockReply(question, book) {
+  const q = String(question);
+  const isKnowledge = !/怎么用|你是谁|在吗|谢谢|哈哈|你好/.test(q);
+  // 从问句里粗暴地抠一个「像知识点」的短语，够用就行
+  const point = q.replace(/[?？。！!，,、\s]/g, '').replace(/^(什么是|请问|我想知道|问一下|怎么|为什么|如何)/, '').slice(0, 14) || '这个问题';
+  const subject = /生物|细胞|免疫|光合|遗传|基因|生态|蛋白/.test(q) ? '生物'
+    : /函数|导数|积分|方程|几何|三角|概率|数列/.test(q) ? '数学'
+    : /化学|反应|离子|摩尔|有机|溶液/.test(q) ? '化学'
+    : /物理|力学|电场|磁场|电流|动量|能量/.test(q) ? '物理' : '综合';
+  const body = isKnowledge
+    ? '先把人话版讲一遍：' + point + '这件事，核心就是抓住「它解决什么问题」这一层，公式和定义都是后面才补的。\n'
+      + '举个小例子帮你落地——你可以把它想成一条流水线：原料进来、中间加工、成品出去，每一步都有它存在的理由。\n\n'
+      + '下一步：要不要我出个小问题考考你'
+    : '这个属于用法上的问题，我直接说结论就好。\n\n下一步：接着看你的书架';
+  const note = isKnowledge
+    ? subject + '·' + point + '：先抓"解决什么问题"这一层；用流水线类比记三步；公式与定义属于后补'
+    : '';
+  const tag = { knowledge: isKnowledge, subject: isKnowledge ? subject : '', point: isKnowledge ? point : '', importance: isKnowledge ? 'medium' : 'low', note: note };
+  return { content: body + '\n<tag>' + JSON.stringify(tag) + '</tag>', tag };
+}
+/* 真接口与假接口的统一出口：返回 { ok, raw } 或抛出 */
+async function callModel(c, messages) {
+  if (MOCK_MODE) {
+    await new Promise(r => setTimeout(r, 380));                 // 装出一点延迟
+    const lastUser = messages.filter(m => m.role === 'user').slice(-1)[0];
+    const mk = mockReply(lastUser ? lastUser.content : '', getActiveBook());
+    return { raw: mk.content, mock: true };
+  }
+  const res = await fetch(c.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.key },
+    body: JSON.stringify({ model: c.model, messages })
+  });
+  if (!res.ok) {
+    const body = (await res.text()).slice(0, 200);
+    const hints = {
+      400: '请求格式有问题', 401: 'API Key 无效或未授权', 402: '余额不足',
+      403: '没有权限访问该模型', 404: '接口地址不对（已自动补全，请检查地址拼写）',
+      422: '参数不合法', 429: '请求太频繁，稍后再试',
+      500: '服务商内部错误', 502: '网关错误', 503: '服务暂时不可用'
+    };
+    throw new Error(`HTTP ${res.status}　${hints[res.status] || ''}\n${body}\n\n实际请求地址：${c.url}`);
+  }
+  const data = await res.json();
+  return { raw: data?.choices?.[0]?.message?.content ?? '(没有拿到回复)', mock: false };
+}
+
 async function send() {
   const inp = $('sbInput');
   const text = inp.value.trim();
   if (!text) return;
   const c = cfg();
-  if (!c.configured) { toast('请先在 ⚙ 设置里填 API Key'); openSettings(); return; }
+  if (!c.configured && !MOCK_MODE) { toast('请先在 ⚙ 设置里填 API Key'); openSettings(); return; }
+
+  // 正在读某本书 → 给系统提示追加「顺手提炼一条笔记」的指令，并记下这一问归属哪本书
+  const book = getActiveBook();
+  const pending = book ? noteQuestionAsked(book, text) : null;
 
   history.push({ role: 'user', content: text });
   inp.value = '';
@@ -780,26 +1695,10 @@ async function send() {
   sbBody.scrollTop = sbBody.scrollHeight;
 
   try {
-    const res = await fetch(c.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.key },
-      body: JSON.stringify({
-        model: c.model,
-        messages: [{ role: 'system', content: c.prompt + TAG_RULE }, ...history.slice(-16)]
-      })
-    });
-    if (!res.ok) {
-      const body = (await res.text()).slice(0, 200);
-      const hints = {
-        400: '请求格式有问题', 401: 'API Key 无效或未授权', 402: '余额不足',
-        403: '没有权限访问该模型', 404: '接口地址不对（已自动补全，请检查地址拼写）',
-        422: '参数不合法', 429: '请求太频繁，稍后再试',
-        500: '服务商内部错误', 502: '网关错误', 503: '服务暂时不可用'
-      };
-      throw new Error(`HTTP ${res.status}　${hints[res.status] || ''}\n${body}\n\n实际请求地址：${c.url}`);
-    }
-    const data = await res.json();
-    const raw = data?.choices?.[0]?.message?.content ?? '(没有拿到回复)';
+    const { raw } = await callModel(c, [
+      { role: 'system', content: c.prompt + TAG_RULE + (book ? bookNoteRule(book) : '') },
+      ...history.slice(-16)
+    ]);
     const { clean: reply, tag, tagBroken } = extractTag(raw);
 
     // 自动沉淀：抽到知识标签就写进疑问库
@@ -807,6 +1706,7 @@ async function send() {
     let out = reply;
     if (saved) {
       renderVaultBadge();
+      if (tag) tag.refId = saved.q.id;          // 书页与疑问库那条对上号，方便互相跳
       toast('已记进疑问库 · ' + (saved.q.subject ? saved.q.subject + ' · ' : '') + saved.q.point);
       // 同一条问到第 3 次：换个讲法，而不是把同一句话再说一遍
       if (saved.repeat >= ASK_PIN) {
@@ -815,6 +1715,21 @@ async function send() {
     } else if (tagBroken) {
       // 认不出就不写库（保持），但要说一声，别让用户以为记下了
       toast('这次没能识别出知识点，没有记录');
+    }
+
+    // 正在读的书：把 AI 提炼出的要点写进去
+    if (book && pending) {
+      const mode = writeNoteFromReply(book, pending, tag && tag.note, reply, tag);
+      if (mode === 'written') {
+        out = reply + `\n\n📖 已写进《${book.title}》`;
+        toast('要点已写进《' + book.title + '》');
+      } else if (mode === 'fallback') {
+        out = reply + `\n\n📖 没能提炼，先把这段截下来放进《${book.title}》（已标注）`;
+        toast('没有提炼出来，已按原文截取写进书里');
+      } else {
+        // 纯闲聊不进书，但要说明白，别让人以为记下了
+        toast('这轮跟《' + book.title + '》没关系，没有写进书里');
+      }
     }
 
     history.push({ role: 'assistant', content: out });
@@ -874,7 +1789,12 @@ function openPomo() {
 }
 $('tbPomo').onclick = () => { closeRadial(); openPomo(); };
 $('tbSetting').onclick = () => openSettings();
-$('pomoClose').onclick = () => { pomo.classList.remove('open'); stopPomo(); };
+$('pomoClose').onclick = () => {
+  pomo.classList.remove('open');
+  stopPomo();
+  // 收面板时立刻静音，不要拖出 900ms 的淡出尾巴
+  if (noiseAuto) { noiseAuto = false; if (noiseState.id) stopNoise(true); }
+};
 $('pomoToggle').onclick = () => pomoRunning ? stopPomo() : startPomo();
 
 function startPomo() {
@@ -891,12 +1811,15 @@ function startPomo() {
       paintPomo();
     }
   }, 1000);
+  // 联动：上次选的雨声/海浪之类的跟着一起响
+  noiseAutoStart();
 }
 function stopPomo() {
   pomoRunning = false;
   clearInterval(pomoTimer);
   $('pomoToggle').textContent = '继续';
   $('pomoLbl').textContent = '已暂停';
+  noiseAutoStop();
 }
 function paintPomo() {
   const m = String(Math.floor(pomoLeft / 60)).padStart(2, '0');
@@ -904,6 +1827,406 @@ function paintPomo() {
   $('pomoTime').textContent = m + ':' + s;
 }
 paintPomo();
+
+/* ================= 白噪音（Web Audio 实时合成） =================
+   刻意不用 mp3：一是零资源（仓库里不多几个 MB，首屏也不多几个请求），
+   二是循环无缝（噪声是现场算的，不存在 mp3 首尾对不上的「咔哒」）。
+   五种声音都是「噪声底色 + 滤波 + 缓慢起伏」的组合：
+     rain  密集宽频雨声（白噪 + 衰减高频，一直下）
+     waves 布朗噪声 + 8 秒周期的低通与音量起伏（潮起潮落）
+     cafe  带通噪声当人声底噪 + 随机杯碟轻响
+     fire  布朗噪声低沉轰鸣 + 随机噼啪
+     brown 干净的布朗噪声，最不抢注意力
+   长时间运行的起伏都用 LFO 做，不用定时器逐帧算 —— 页面卡不卡都不影响声音。
+   ------------------------------------------------------------------ */
+const NOISE_PRESETS = [
+  { id: 'rain',  name: '雨声',   ic: '🌧️' },
+  { id: 'waves', name: '海浪',   ic: '🌊' },
+  { id: 'cafe',  name: '咖啡馆', ic: '☕' },
+  { id: 'fire',  name: '壁炉',   ic: '🔥' },
+  { id: 'brown', name: '静噪',   ic: '🎚️' }
+];
+
+let audioCtx = null, masterGain = null;
+let noiseState = { id: null, nodes: [], timers: [] };
+let pendingSound = null;                        // 等音频线程唤醒后要放的声音
+let audioUnlocked = false;                      // 音频线程已经被用户手势唤醒过（自测用）
+
+function ctx() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    audioCtx = new AC();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0;
+    masterGain.connect(audioCtx.destination);
+  }
+  return audioCtx;
+}
+
+/* 关键：suspended 状态下建出来的音源，currentTime 一直是 0，等到 audio 线程真的醒了，
+   那个「开始时间」早就成了过去式 —— 表现就是点了没声音。所以必须先等 state 真的变成
+   running，再去建音源。resume() 是异步的，这里用 Promise 等它。 */
+function ensureRunning() {
+  const c = ctx();
+  if (!c) return Promise.resolve(null);
+  if (c.state === 'running') return Promise.resolve(c);
+  return c.resume().then(() => c).catch(() => c);
+}
+
+/* 浏览器只在「用户手势刚发生的那几秒」里允许唤醒音频线程。
+   番茄钟联动最容易踩这个坑：页面开着不动，几分钟后才点番茄钟，
+   那次点击虽然也是手势，但音频线程的解锁窗口早过了。
+   所以头一次交互就把音频线程叫醒（此时主增益是 0，不会出声），
+   之后再点什么都来得及。 */
+if (window.AudioContext || window.webkitAudioContext) {
+  const prime = () => {
+    ensureRunning().then(c => {
+      if (!c || c.state !== 'running') return;
+      audioUnlocked = true;
+      document.removeEventListener('pointerdown', prime, true);
+      document.removeEventListener('keydown', prime, true);
+    });
+  };
+  document.addEventListener('pointerdown', prime, true);
+  document.addEventListener('keydown', prime, true);
+}
+
+/* 白 / 粉 / 布朗噪声：各生成一段 4 秒的 buffer 循环播放。
+   粉噪声和布朗噪声按「频率越低能量越强」的规律积分生成，听感比白噪声厚得多。 */
+const noiseBufCache = {};
+function noiseBuffer(c, color) {
+  if (noiseBufCache[color]) return noiseBufCache[color];
+  const len = Math.floor(c.sampleRate * 4);
+  const buf = c.createBuffer(1, len, c.sampleRate);
+  const d = buf.getChannelData(0);
+  if (color === 'white') {
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  } else if (color === 'pink') {
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + w * 0.0555179;
+      b1 = 0.99332 * b1 + w * 0.0750759;
+      b2 = 0.96900 * b2 + w * 0.1538520;
+      b3 = 0.86650 * b3 + w * 0.3104856;
+      b4 = 0.55000 * b4 + w * 0.5329522;
+      b5 = -0.7616 * b5 - w * 0.0168980;
+      d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
+      b6 = w * 0.115926;
+    }
+  } else {
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      last = (last + 0.02 * w) / 1.02;
+      d[i] = last * 3.5;
+    }
+  }
+  noiseBufCache[color] = buf;
+  return buf;
+}
+
+/* 一段循环噪声源 */
+function noiseSource(c, color) {
+  const src = c.createBufferSource();
+  src.buffer = noiseBuffer(c, color);
+  src.loop = true;
+  src.start();
+  return src;
+}
+
+/* 缓慢起伏：把 LFO 接到某个 AudioParam 上（频率、增益都行） */
+function lfo(c, target, rate, depth, offset) {
+  const osc = c.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = rate;
+  const amp = c.createGain();
+  amp.gain.value = depth;
+  target.value = offset;
+  osc.connect(amp);
+  amp.connect(target);
+  osc.start();
+  return [osc, amp];
+}
+
+function buildPreset(c, id) {
+  const out = c.createGain();
+  const nodes = [], timers = [];
+  const push = n => { nodes.push(n); return n; };
+
+  if (id === 'rain') {
+    const hp = push(c.createBiquadFilter()); hp.type = 'highpass'; hp.frequency.value = 380; hp.Q.value = .4;
+    const sh = push(c.createBiquadFilter()); sh.type = 'highshelf'; sh.frequency.value = 2600; sh.gain.value = -5;
+    const lp = push(c.createBiquadFilter()); lp.type = 'lowpass'; lp.frequency.value = 7200; lp.Q.value = .3;
+    push(noiseSource(c, 'white')).connect(hp);
+    hp.connect(sh); sh.connect(lp); lp.connect(out);
+    out.gain.value = 0.75;
+    lfo(c, lp.frequency, 0.055, 900, 7200).forEach(push);   // 雨要「下得匀」，只做极慢的强弱变化
+  } else if (id === 'waves') {
+    const lp = push(c.createBiquadFilter()); lp.type = 'lowpass'; lp.frequency.value = 620; lp.Q.value = .7;
+    const sw = push(c.createGain()); sw.gain.value = .5;
+    push(noiseSource(c, 'brown')).connect(lp); lp.connect(sw); sw.connect(out);
+    lfo(c, lp.frequency, 0.125, 320, 620).forEach(push);    // 8 秒一轮：浪头推上来
+    lfo(c, sw.gain, 0.125, 0.35, 0.5).forEach(push);        // 音量跟着起伏
+    out.gain.value = 1.5;
+  } else if (id === 'cafe') {
+    /* 咖啡馆最难调：只有带通噪声会显得「空」，只有宽频又像白噪声。
+       所以两条路并联：宽频粉噪声当房间底噪，带通那路当人声的「嗡嗡」，
+       再加一点高频气声，最后才是杯碟轻响。 */
+    const hp = push(c.createBiquadFilter()); hp.type = 'highpass'; hp.frequency.value = 120; hp.Q.value = .5;
+    const room = push(c.createGain()); room.gain.value = .34;
+    push(noiseSource(c, 'pink')).connect(hp); hp.connect(room); room.connect(out);
+
+    const bp = push(c.createBiquadFilter()); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 1.1;
+    const mur = push(c.createGain()); mur.gain.value = 1.5;
+    push(noiseSource(c, 'pink')).connect(bp); bp.connect(mur); mur.connect(out);
+    lfo(c, bp.frequency, 0.07, 260, 900).forEach(push);     // 人声底噪缓慢游走
+
+    const air = push(c.createBiquadFilter()); air.type = 'highpass'; air.frequency.value = 4200;
+    const airG = push(c.createGain()); airG.gain.value = .05;
+    push(noiseSource(c, 'white')).connect(air); air.connect(airG); airG.connect(out);
+
+    out.gain.value = 0.9;
+    // 杯碟轻响：随机间隔 + 短促高频
+    let running = true;
+    const loop = () => {
+      if (!running) return;
+      if (Math.random() < .7) {
+        const t = c.currentTime + 0.02;
+        const o = c.createOscillator(); o.type = 'triangle';
+        o.frequency.value = 1900 + Math.random() * 1500;
+        const g = c.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.03 + Math.random() * 0.03, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+        o.connect(g); g.connect(out);
+        o.start(t); o.stop(t + 0.2);
+        push(o); push(g);
+      }
+      timers.push(setTimeout(loop, 700 + Math.random() * 3200));
+    };
+    loop();
+  } else if (id === 'fire') {
+    const lp = push(c.createBiquadFilter()); lp.type = 'lowpass'; lp.frequency.value = 340; lp.Q.value = .5;
+    const bed = push(c.createGain()); bed.gain.value = .62;
+    push(noiseSource(c, 'brown')).connect(lp); lp.connect(bed); bed.connect(out);
+    lfo(c, bed.gain, 0.09, 0.1, 0.62).forEach(push);
+    out.gain.value = 1.6;
+    // 噼啪：带通白噪 + 极快包络
+    let running = true;
+    const loop = () => {
+      if (!running) return;
+      if (Math.random() < .8) {
+        const t = c.currentTime + 0.02;
+        const src = noiseSource(c, 'white');
+        const bp = c.createBiquadFilter(); bp.type = 'bandpass';
+        bp.frequency.value = 900 + Math.random() * 2600; bp.Q.value = 1.2;
+        const g = c.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.05 + Math.random() * 0.05, t + 0.003);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05 + Math.random() * 0.12);
+        src.connect(bp); bp.connect(g); g.connect(out);
+        setTimeout(() => { try { src.stop(); } catch (e) {} }, 400);
+        push(src); push(bp); push(g);
+      }
+      timers.push(setTimeout(loop, 90 + Math.random() * 700));
+    };
+    loop();
+  } else {
+    const lp = push(c.createBiquadFilter()); lp.type = 'lowpass'; lp.frequency.value = 1200; lp.Q.value = .4;
+    push(noiseSource(c, 'brown')).connect(lp); lp.connect(out);
+    lfo(c, lp.frequency, 0.04, 260, 1200).forEach(push);
+    out.gain.value = 1.35;
+  }
+
+  return { out, nodes, timers };
+}
+
+function noiseVolume() { return Math.max(0, Math.min(100, Number(LS.get('study_noise_vol', 45)) || 0)); }
+function applyVolume() {
+  const v = noiseVolume() / 100;
+  const target = v * v * 0.5;                   // 平方曲线：低音量段更好调
+  if (masterGain && audioCtx) masterGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.05);
+  return target;
+}
+
+function stopNoise(instant) {
+  pendingSound = null;                          // 停就是停，别让待播的声音再冒出来
+  noiseState.timers.forEach(clearTimeout);
+  noiseState.timers = [];
+  const nodes = noiseState.nodes;
+  noiseState.nodes = [];
+  const had = noiseState.id;
+  noiseState.id = null;
+  const c = audioCtx;
+  if (c && masterGain) {
+    masterGain.gain.cancelScheduledValues(c.currentTime);
+    masterGain.gain.setTargetAtTime(0, c.currentTime, instant ? 0.01 : 0.3);
+  }
+  const kill = () => nodes.forEach(n => { try { n.stop && n.stop(); n.disconnect && n.disconnect(); } catch (e) {} });
+  if (instant) kill();
+  else setTimeout(kill, 900);                    // 等淡出完再拆，避免「咔」一下
+  renderNoise();
+  return had;
+}
+
+function startNoise(id) {
+  if (!NOISE_PRESETS.some(p => p.id === id)) return;
+  const c = ctx();
+  if (!c) { toast('这个浏览器不支持 Web Audio，放不了白噪音'); return; }
+  if (noiseState.id === id && c.state === 'running') return;
+  stopNoise();
+  pendingSound = id;
+  LS.set('study_noise_last', id);               // 下次打开自动接着放
+  renderNoise();                                // 先让界面亮起来，别让用户觉得没反应
+  ensureRunning().then(cc => {
+    if (pendingSound !== id || !cc) return;
+    pendingSound = null;
+    if (cc.state !== 'running') {               // 还是被浏览器拦着（比如没有用户手势）
+      renderNoise();
+      toast('浏览器还没允许出声，点一下页面任意处再试');
+      return;
+    }
+    const built = buildPreset(cc, id);
+    built.out.connect(masterGain);
+    noiseState = { id, nodes: built.nodes, timers: built.timers, out: built.out };
+    applyVolume();                              // 从 0 淡上来，不会有爆音
+    if (noiseAutoPending) {                     // 这次是番茄钟带起来的 → 交给番茄钟管开关
+      noiseAutoPending = false;
+      noiseAuto = true;
+      toast('白噪音已随番茄钟开始 🎧');
+    }
+    renderNoise();
+  });
+}
+
+function currentPreset() { return NOISE_PRESETS.find(p => p.id === noiseState.id) || null; }
+function renderNoise() {
+  document.querySelectorAll('.noise-btn').forEach(b => b.classList.toggle('on', b.dataset.id === noiseState.id));
+  const p = currentPreset();
+  const pick = $('noisePick');
+  if (pick) {
+    pick.textContent = p ? p.ic + ' ' + p.name + ' · 播放中' : '未开启';
+    pick.style.color = p ? 'var(--ok)' : 'var(--cream-dim)';
+  }
+  const btn = $('tbSound');
+  if (btn) {
+    btn.classList.toggle('on', !!p);
+    btn.title = p ? '白噪音：' + p.name + '（播放中）' : '白噪音';
+  }
+  // 自测出口：音频线程的真实状态，以及「现在到底有没有声音」——
+  // 探针挂在主增益后面，量的是音频图里真实的 RMS 电平（'suspended' 表示音频线程没跑）
+  // 注意用 getter：如果做成一次性快照，读取时机稍早就永远看不到真实状态
+  Object.defineProperty(window, '__noise', {
+    configurable: true,
+    get() {
+      return {
+        id: noiseState.id,
+        pending: pendingSound,
+        state: audioCtx ? audioCtx.state : 'not-created',
+        unlocked: audioUnlocked,
+        nodes: noiseState.nodes.length,
+        volume: noiseVolume(),
+        level: probeNoiseLevel
+      };
+    }
+  });
+}
+
+function probeNoiseLevel(ms) {
+  return new Promise(resolve => {
+    const c = audioCtx;
+    if (!c || !masterGain) return resolve(null);
+    if (c.state !== 'running') return resolve('suspended');
+    const an = c.createAnalyser();
+    an.fftSize = 2048;
+    masterGain.connect(an);                     // 只挂探针，不改变声音的去向
+    const data = new Float32Array(an.fftSize);
+    setTimeout(() => {
+      an.getFloatTimeDomainData(data);
+      let sum = 0;
+      for (let i = 0; i < data.length; i++) sum += data[i] * data[i];
+      try { masterGain.disconnect(an); an.disconnect(); } catch (e) {}
+      resolve(Math.sqrt(sum / data.length));
+    }, ms || 300);
+  });
+}
+
+function openNoise() {
+  $('noise').classList.add('open');
+  ctx();                                        // 借这次点击解锁音频（浏览器要求用户手势）
+  renderNoise();
+}
+function closeNoise() { $('noise').classList.remove('open'); }
+function toggleNoisePanel() {
+  if ($('noise').classList.contains('open')) closeNoise();
+  else openNoise();
+}
+
+$('tbSound').onclick = () => { closeRadial(); toggleNoisePanel(); };
+$('noiseClose').onclick = closeNoise;
+$('noiseStop').onclick = () => { if (noiseState.id) { stopNoise(); toast('已停止白噪音'); } };
+$('noiseVol').oninput = e => {
+  $('noiseVolVal').textContent = e.target.value;
+  LS.set('study_noise_vol', Number(e.target.value));
+  applyVolume();
+};
+$('noiseAuto').onchange = e => {
+  LS.set('study_noise_auto', !!e.target.checked);
+  toast(e.target.checked ? '番茄钟会连带白噪音一起开关' : '已取消联动');
+};
+
+// 预设按钮按 NOISE_PRESETS 生成，不写死在 HTML 里；以后加声音只改一处
+(function buildNoiseGrid() {
+  const grid = $('noiseGrid');
+  grid.innerHTML = NOISE_PRESETS.map(p =>
+    `<button class="noise-btn" data-id="${p.id}" title="${p.name}"><span class="ic">${p.ic}</span><span>${p.name}</span></button>`
+  ).join('');
+  grid.onclick = e => {
+    const b = e.target.closest('.noise-btn');
+    if (!b) return;
+    if (noiseState.id === b.dataset.id) { stopNoise(); toast('已停止白噪音'); }
+    else startNoise(b.dataset.id);
+  };
+})();
+
+// 恢复上次的音量与选择；自动出声只在「这次访问里已经有过真实点击」时才做，否则会被浏览器拦
+(function restoreNoise() {
+  const v = noiseVolume();
+  $('noiseVol').value = v;
+  $('noiseVolVal').textContent = v;
+  $('noiseAuto').checked = !!LS.get('study_noise_auto', false);
+  renderNoise();
+  let touched = false;
+  document.addEventListener('pointerdown', () => { touched = true; }, { once: true, capture: true });
+  document.addEventListener('keydown', () => { touched = true; }, { once: true, capture: true });
+  const want = LS.get('study_noise_last', '');
+  if (want && NOISE_PRESETS.some(p => p.id === want)) {
+    setTimeout(() => { if (touched) startNoise(want); }, 600);
+  }
+})();
+
+/* 番茄钟联动。
+   坑：startNoise 是异步的（要等音频线程真的醒来），所以不能在调用处判断
+   「有没有响起来」——那时 noiseState.id 还是 null，会把联动标记漏掉，
+   结果番茄钟暂停时声音停不掉。这里改成：先挂一个「待联动」的牌子，
+   等声音真的起来了再由 startNoise 转成正式的联动标记。 */
+let noiseAuto = false, noiseAutoPending = false;
+function noiseAutoStart() {
+  if (!LS.get('study_noise_auto', false)) return;
+  if (noiseState.id || pendingSound) return;          // 用户自己开着声音，不抢
+  const want = LS.get('study_noise_last', 'rain');
+  if (!NOISE_PRESETS.some(p => p.id === want)) return;
+  noiseAutoPending = true;
+  startNoise(want);
+}
+function noiseAutoStop() {
+  noiseAutoPending = false;
+  if (!noiseAuto) return;                            // 手动开的，番茄钟不负责关
+  noiseAuto = false;
+  if (noiseState.id || pendingSound) stopNoise();
+}
 
 /* ================= 疑问库：列表与复习 ================= */
 const vaultEl = $('vault'), vaultBody = $('vaultBody');
@@ -1157,7 +2480,83 @@ $('vaultClose').onclick = closeVault;
 $('vaultReviewBtn').onclick = startReview;
 renderVaultBadge();
 
-/* ================= 演示参数（?demo=radial|sidebar|setting|pomo|vault） ================= */
+/* ================= 数据备份 / 恢复 =================
+   比赛演示最怕的场面：换台电脑、或者手滑清了浏览器缓存，攒了几周的疑问库没了。
+   导出做成一个 JSON 文件，导入时做字段校验，不认识的文件直接拒绝，不做「尽力而为」的猜测。
+   API Key 不参与导出 —— 那是个人凭证，不该跟着数据跑。
+   -------------------------------------------------------- */
+const BAK_KEYS = ['study_vault', 'study_todos', 'study_books', 'study_history', 'study_noise_last', 'study_noise_vol', 'study_noise_auto'];
+
+function bakStatLine() {
+  const q = LS.get('study_vault', []).length;
+  const t = LS.get('study_todos', []).length;
+  const bk = LS.get('study_books', []).length;
+  const done = LS.get('study_books', []).filter(b => b.state === 'finished').length;
+  const h = LS.get('study_history', []).length;
+  return `当前有 ${q} 条疑问、${t} 条待办（书架 ${bk} 本，读完 ${done} 本）、${h} 条对话记录`;
+}
+function openBackup() {
+  $('bakStat').textContent = bakStatLine();
+  $('bakMask').classList.add('open');
+}
+function closeBackup() { $('bakMask').classList.remove('open'); }
+
+function exportBackup() {
+  const data = { app: 'study-companion', version: 1, exportedAt: new Date().toISOString(), data: {} };
+  BAK_KEYS.forEach(k => {
+    const raw = localStorage.getItem(k);
+    if (raw !== null) { try { data.data[k] = JSON.parse(raw); } catch (e) { data.data[k] = raw; } }
+  });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `伴学数据备份-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  toast('已导出：' + bakStatLine());
+}
+
+function importBackup(file) {
+  if (!file) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    let obj = null;
+    try { obj = JSON.parse(String(fr.result)); } catch (e) { obj = null; }
+    // 校验：必须是本应用导出的、且带 data 对象；不认识的格式直接拒绝，不猜
+    if (!obj || typeof obj !== 'object' || obj.app !== 'study-companion' || !obj.data || typeof obj.data !== 'object') {
+      toast('这个文件不是伴学导出的备份，没有动你的数据');
+      return;
+    }
+    const vaultIn = obj.data.study_vault;
+    if (vaultIn !== undefined && !Array.isArray(vaultIn)) { toast('备份里的疑问库格式不对，已中止'); return; }
+    const booksIn = obj.data.study_books;
+    if (booksIn !== undefined && !Array.isArray(booksIn)) { toast('备份里的书架格式不对，已中止'); return; }
+    const before = LS.get('study_vault', []).length;
+    let n = 0;
+    BAK_KEYS.forEach(k => {
+      if (obj.data[k] === undefined) return;
+      LS.set(k, obj.data[k]);
+      n++;
+    });
+    if (!n) { toast('备份里没有可恢复的内容'); return; }
+    closeBackup();
+    toast(`已恢复 ${n} 类数据（疑问库 ${before} → ${Array.isArray(vaultIn) ? vaultIn.length : before} 条），正在重新加载…`);
+    setTimeout(() => location.reload(), 900);
+  };
+  fr.onerror = () => toast('文件读取失败');
+  fr.readAsText(file);
+}
+
+$('vaultBackup').onclick = openBackup;
+$('bakClose').onclick = closeBackup;
+$('bakMask').onclick = e => { if (e.target === $('bakMask')) closeBackup(); };
+$('bakExport').onclick = exportBackup;
+$('bakImport').onclick = () => $('bakFile').click();
+$('bakFile').onchange = e => { importBackup(e.target.files && e.target.files[0]); e.target.value = ''; };
+
+/* ================= 演示参数（?demo=radial|sidebar|setting|pomo|vault|noise） ================= */
 const demo = new URLSearchParams(location.search).get('demo');
 if (demo === 'radial')  setTimeout(openRadial, 400);
 if (demo === 'sidebar') setTimeout(() => openSidebar(), 400);
@@ -1165,6 +2564,14 @@ if (demo === 'setting') setTimeout(openSettings, 400);
 if (demo === 'pomo')    setTimeout(openPomo, 400);
 if (demo === 'vault')   setTimeout(openVault, 400);
 if (demo === 'review')  setTimeout(() => { startReview(); }, 400);
+if (demo === 'noise')   setTimeout(openNoise, 400);
+// 书架演示：自动挑一本开始读，省得录视频时手动点
+if (demo === 'reading') setTimeout(() => {
+  const b = books.filter(x => x.state === 'onShelf')[0];
+  if (b) startReading(b.id);
+}, 500);
+if (demo === 'book')    setTimeout(() => { const b = books[0]; if (b) openBookCard(b.id); }, 500);
+if (demo === 'stack')   setTimeout(showStack, 500);
 
 /* ================= 场景帧动画（JS 驱动：随机 3~10 秒切换 + 眨眼） =================
    防闪黑：每个帧预先渲染成常驻 DOM 的 <img> 图层，src 只设一次、之后永不改动，
@@ -1246,7 +2653,6 @@ function doBlink() {
 curFrame = SCENE_FRAMES[Math.floor(Math.random() * SCENE_FRAMES.length)];
 fadeIn(layers[curFrame.img], '.38s');
 frameTimer = setTimeout(advanceFrame, 3000 + Math.random() * 7000);
-
 </script>
 </body>
 </html>

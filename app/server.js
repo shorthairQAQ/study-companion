@@ -16,6 +16,9 @@ const MIME = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.webp': 'image/webp',          // 以后换 webp 素材时用得上；缺了这条浏览器只能当二进制流猜着处理
+  '.avif': 'image/avif',
+  '.woff2': 'font/woff2',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
@@ -36,15 +39,34 @@ function handler(req, res) {
     return res.end('403 Forbidden');
   }
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
+  fs.stat(filePath, (err, st) => {
+    if (err || !st.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       return res.end('404 Not Found: ' + urlPath);
     }
-    res.writeHead(200, {
-      'Content-Type': MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream'
+
+    /* 弱 ETag + Last-Modified：刷新页面时帧图走 304，不再重复传 368KB。
+       调试时想强制拿新图，用 Ctrl+F5（浏览器会发 no-cache）。 */
+    const etag = 'W/"' + st.size.toString(16) + '-' + st.mtimeMs.toString(16) + '"';
+    const headers = {
+      'Content-Type': MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
+      'ETag': etag,
+      'Last-Modified': st.mtime.toUTCString(),
+      'Cache-Control': 'no-cache'      // 每次校验，命中就 304
+    };
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304, headers);
+      return res.end();
+    }
+
+    fs.readFile(filePath, (err2, data) => {
+      if (err2) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        return res.end('404 Not Found: ' + urlPath);
+      }
+      res.writeHead(200, headers);
+      res.end(data);
     });
-    res.end(data);
   });
 }
 
