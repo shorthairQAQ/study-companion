@@ -182,6 +182,24 @@ body{
   padding:12px 14px;border-bottom:2px solid var(--line);
 }
 .sb-hd .title{flex:1;font-size:14px;letter-spacing:2px;color:var(--amber)}
+/* 学科标签栏：一个标签 = 一个独立会话（各自一份历史，互不污染上下文） */
+.sb-tabs{
+  display:flex;flex-wrap:wrap;padding:9px 10px 3px;
+  border-bottom:2px solid var(--line);background:rgba(0,0,0,.22);
+}
+.sb-tab{
+  position:relative;margin:0 6px 6px 0;padding:5px 11px;
+  background:rgba(20,14,11,.55);border:2px solid var(--line);color:var(--cream-dim);
+  font-size:12px;font-family:inherit;letter-spacing:1px;cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.sb-tab:hover{border-color:var(--line-2);color:var(--cream)}
+.sb-tab.on{
+  background:rgba(255,200,97,.20);border-color:var(--amber);color:var(--amber);
+  box-shadow:2px 2px 0 rgba(0,0,0,.45);
+}
+.sb-tab .n{margin-left:5px;font-size:10px;color:var(--cream-dim)}
+.sb-tab.on .n{color:var(--amber-dim)}
 .icon-btn{
   width:30px;height:30px;display:flex;align-items:center;justify-content:center;
   background:transparent;border:2px solid var(--line);color:var(--cream);
@@ -507,11 +525,13 @@ body{
 <!-- ============ 侧栏 ============ -->
 <aside class="sidebar" id="sidebar">
   <div class="sb-hd">
-    <span class="title">临时对话</span>
+    <span class="title" id="sbTitle">临时对话</span>
     <button class="icon-btn" id="sbSetting" title="API 设置">⚙</button>
-    <button class="icon-btn" id="sbClear" title="清空对话">🗑</button>
+    <button class="icon-btn" id="sbClear" title="清空当前学科的对话">🗑</button>
     <button class="icon-btn" id="sbClose" title="收起">✕</button>
   </div>
+  <!-- 学科标签栏：内容由 renderTabs() 按「临时 → 知识树学科 → 动态发现」的顺序渲染 -->
+  <div class="sb-tabs" id="sbTabs"></div>
   <div class="sb-body" id="sbBody"></div>
   <div class="sb-ctx" id="sbCtx" hidden></div>
   <div class="sb-foot">
@@ -726,10 +746,39 @@ function openSidebar(prefill) {
 }
 $('sbHandle').onclick = () => openSidebar();
 $('sbClose').onclick = () => sidebar.classList.remove('open');
+
+/* 清空 🗑：只清「当前标签」这一个学科的会话，不再清光所有学科的历史。
+   破坏性操作 → 第一次点进入确认态（按钮变 ✓），再点一次才真的清空；
+   不弹 window.confirm，避免打断侧栏里的输入。 */
+let clearArmTimer = null;
+function disarmClear() {
+  clearTimeout(clearArmTimer);
+  const btn = $('sbClear');
+  if (!btn) return;
+  delete btn.dataset.arm;
+  btn.textContent = '🗑';
+  btn.title = '清空当前学科的对话';
+}
 $('sbClear').onclick = () => {
-  history.length = 0;
+  const btn = $('sbClear');
+  const t = tabOf(activeChat);
+  const list = ensureChat(activeChat);
+  if (btn.dataset.arm !== '1') {
+    if (!list.length) { toast('「' + t.name + '」还没有对话'); return; }
+    btn.dataset.arm = '1';
+    btn.textContent = '✓';
+    btn.title = '再点一次确认清空「' + t.name + '」';
+    toast('再点一次 🗑 确认清空「' + t.name + '」· 其他学科不受影响');
+    clearTimeout(clearArmTimer);
+    clearArmTimer = setTimeout(disarmClear, 3200);   // 3 秒没确认就自动复位
+    return;
+  }
+  disarmClear();
+  list.length = 0;              // 只清这一个会话，其他学科的数组一根汗毛都不动
+  saveChats();
+  renderTabs();
   renderMsgs();
-  toast('对话已清空（历史已重置）');
+  toast('已清空「' + t.name + '」的对话，只清这一个学科');
 };
 $('sbSetting').onclick = openSettings;
 
@@ -874,7 +923,152 @@ const effDiff = id => {
 /* 学生改过 → 用学生值；没改过 → 用自动聚合（拿不到就是 null = 未评） */
 const effMast = id => (typeof nodeMastManual[id] === 'number') ? nodeMastManual[id] : autoNodeMastery(id);
 
-let history = LS.get('study_history', []);
+/* ================= 分学科独立会话（解决上下文污染） =================
+   以前只有一个全局数组 history：问生物之前如果聊了数学，最近 16 条里夹着
+   数学内容，AI 就拿着不相关的上下文回答 —— 这就是上下文污染。
+   现在：一个学科标签 = 一个独立会话，各有一份自己的历史数组，
+   发消息只用「当前标签」的历史（仍然是最近 16 条），互不干扰。
+   存储：study_chats = { temp:[...], bio:[...], math:[...] }
+   ---------------------------------------------------------------- */
+const CHAT_KEY = 'study_chats';              // 会话对象（本功能的主存储）
+const CHAT_ACTIVE_KEY = 'study_active_chat'; // 上次选中的标签
+const CHAT_LABELS_KEY = 'study_chat_labels'; // 动态发现的学科：key → 显示名
+const TEMP_KEY = 'temp';                     // 固定第一个标签「临时」
+
+/* 学科名 → 标签 key。知识树里的学科直接用它的节点 id（生物 = bio），
+   常见学科给固定短码，没见过的（模型报了个新学科）用 s_ + 名字。
+   key 一旦生成就稳定复用，所以同一科永远落在同一个会话里。 */
+const SUBJECT_KEY_MAP = {
+  '临时': 'temp', '生物': 'bio', '数学': 'math', '物理': 'phy', '化学': 'chem',
+  '英语': 'en', '语文': 'cn', '历史': 'his', '地理': 'geo', '政治': 'pol'
+};
+
+/* 知识树里的顶层学科节点（现在只有「生物」这一棵树）。
+   以后要多科：往这个数组里再推一个同构根节点即可，标签栏自动多一科。 */
+const SUBJECT_ROOTS = [BIO_TREE];
+
+/* 会话里的字符串一律这样取：旧数据 / 模型塞了 null、数字、对象都不会崩 */
+const chatText = v => (v === null || v === undefined || typeof v === 'object') ? '' : String(v).trim();
+
+function subjectKeyOf(name) {
+  const n = chatText(name);
+  if (!n) return '';
+  if (SUBJECT_KEY_MAP[n]) return SUBJECT_KEY_MAP[n];
+  const low = n.toLowerCase();
+  if (/^[a-z0-9_]{1,12}$/.test(low)) return low;                        // 已经是英文短码
+  const slug = low.replace(/[^a-z0-9\u4e00-\u9fa5]/g, '').slice(0, 8);  // 保留中文，去掉符号
+  return 's_' + (slug || 'x');
+}
+
+/* ---------- 数据迁移：旧的单一 history 整体搬进 temp ----------
+   只要 study_chats 这个键已经存在（哪怕值是空对象）就不再迁移 ——
+   所以用户之后清空了 temp，也不会被旧历史重新灌回来。
+   旧键 study_history 保留不删（方便回滚），迁移不会重复执行。 */
+let chats = LS.get(CHAT_KEY, null);
+if (!chats || typeof chats !== 'object' || Array.isArray(chats)) {
+  const legacy = LS.get('study_history', []);
+  chats = { [TEMP_KEY]: Array.isArray(legacy) ? legacy : [] };
+  LS.set(CHAT_KEY, chats);
+}
+
+/* 归一化：每个学科的值必须是数组；数组里只留认得出的消息。
+   旧的 {role, content} 之外的东西一律丢掉，缺字段也不会崩。 */
+Object.keys(chats).forEach(k => {
+  const v = chats[k];
+  chats[k] = Array.isArray(v)
+    ? v.filter(m => m && typeof m === 'object' && !Array.isArray(m)).map(m => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: chatText(m.content)
+      })).filter(m => m.content)
+    : [];
+});
+
+function ensureChat(key) {
+  const k = chatText(key) || TEMP_KEY;
+  if (!Array.isArray(chats[k])) chats[k] = [];
+  return chats[k];
+}
+ensureChat(TEMP_KEY);   // 「临时」永远在
+const saveChats = () => LS.set(CHAT_KEY, chats);
+
+/* 动态发现的学科名单独存一个键（chats 的 key 只装历史数组，结构保持干净） */
+let chatLabels = LS.get(CHAT_LABELS_KEY, {});
+if (!chatLabels || typeof chatLabels !== 'object' || Array.isArray(chatLabels)) chatLabels = {};
+Object.keys(chatLabels).forEach(k => {
+  const nm = chatText(chatLabels[k]);
+  if (nm) chatLabels[k] = nm; else delete chatLabels[k];
+});
+
+let activeChat = chatText(LS.get(CHAT_ACTIVE_KEY, TEMP_KEY)) || TEMP_KEY;
+
+/* ---------- 学科标签怎么来：三者合并去重 ----------
+   ① 固定第一个「临时」 ② 知识树里的顶层学科 ③ AI 打标签动态发现的新学科 */
+function subjectTabs() {
+  const tabs = [], seen = new Set();
+  const push = (key, name) => {
+    const k = chatText(key);
+    if (!k || seen.has(k)) return;
+    seen.add(k);
+    tabs.push({ key: k, name: chatText(name) || k });
+  };
+  push(TEMP_KEY, '临时');
+  SUBJECT_ROOTS.forEach(n => n && push(n.id, n.name));
+  Object.keys(chatLabels).forEach(k => push(k, chatLabels[k]));
+  return tabs;
+}
+const tabOf = key => subjectTabs().find(t => t.key === key) || { key: TEMP_KEY, name: '临时' };
+
+/* 渲染标签栏 + 侧栏标题（标题跟着当前学科走） */
+function renderTabs() {
+  const el = $('sbTabs');
+  if (!el) return;
+  const tabs = subjectTabs();
+  el.innerHTML = tabs.map(t => {
+    const n = Array.isArray(chats[t.key]) ? chats[t.key].length : 0;
+    return `<button class="sb-tab${t.key === activeChat ? ' on' : ''}" data-chat="${esc(t.key)}"`
+         + ` title="${esc(t.name)}的独立对话">${esc(t.name)}${n ? `<span class="n">${n}</span>` : ''}</button>`;
+  }).join('');
+  const cur = tabs.find(t => t.key === activeChat);
+  const ttl = $('sbTitle');
+  if (ttl) ttl.textContent = (cur ? cur.name : '临时') + '对话';
+}
+
+/* 切标签 = 切会话：消息区立刻换成该学科自己的历史 */
+function switchChat(key) {
+  const t = subjectTabs().find(x => x.key === key);
+  if (!t) return false;
+  ensureChat(t.key);
+  activeChat = t.key;
+  LS.set(CHAT_ACTIVE_KEY, activeChat);
+  renderTabs();
+  renderMsgs();
+  return true;
+}
+
+/* AI 打标签报出一个没见过的学科 → 自动新增一个标签。
+   返回「新开的学科名」（不是新开的返回空串），调用方可以顺带提示一句。 */
+function registerSubject(name) {
+  const key = subjectKeyOf(name);
+  const nm = chatText(name);
+  if (!key || !nm) return '';
+  const isNew = !subjectTabs().some(t => t.key === key);
+  if (chatLabels[key] !== nm) { chatLabels[key] = nm; LS.set(CHAT_LABELS_KEY, chatLabels); }
+  ensureChat(key);
+  saveChats();
+  renderTabs();
+  return isNew ? nm : '';
+}
+
+/* 知识树节点属于哪一科：往上找到顶层学科节点，它的 id 就是标签 key */
+function subjectKeyOfNode(nodeId) {
+  let cur = nodeId, guard = 0;
+  while (cur && NODE_PARENT[cur] && guard++ < 12) cur = NODE_PARENT[cur];
+  return (cur && NODE_INDEX[cur]) ? cur : '';
+}
+
+/* 选中的标签必须真的存在（比如 labels 被清过），否则回到「临时」 */
+if (!subjectTabs().some(t => t.key === activeChat)) activeChat = TEMP_KEY;
+
 const DEFAULT_PROMPT = '你是一个温柔、耐心的 AI 学习伙伴，陪伴高中生学习。回答要口语化、简洁，多用鼓励的语气。解释知识点时先说人话，再举一个小例子。不要长篇大论。回答的正文最后一行，固定用「下一步：…」给一个可执行的建议动作（例如"下一步：要不要我出个小问题考考你"、"下一步：接着看你的待办清单"）。同一件事不要重复追问——如果上一轮已经提过而学生没回应，就不要再提，自然结束即可。';
 
 /* ================= 疑问库（产品核心机制） =================
@@ -1020,14 +1214,27 @@ function renderVaultBadge() {
   el.style.display = n ? '' : 'none';
 }
 
+/* 消息区只画「当前标签」这一个会话的历史；空会话给友好提示 */
 function renderMsgs() {
-  if (!history.length) {
-    sbBody.innerHTML = '<div class="msg sys">随便问我点什么吧。<br>比如「什么是免疫防御」</div>';
+  const list = ensureChat(activeChat);
+  if (!list.length) {
+    const t = tabOf(activeChat);
+    sbBody.innerHTML = activeChat === TEMP_KEY
+      ? '<div class="msg sys">这里还没有对话，问点什么吧。<br>比如「什么是免疫防御」</div>'
+      : `<div class="msg sys">这里还没有对话，问点什么吧。<br>这是「${esc(t.name)}」的独立会话，别的学科聊过的不会混进来。</div>`;
     return;
   }
-  sbBody.innerHTML = history.map(m => `<div class="msg ${m.role === 'user' ? 'me' : 'ai'}">${esc(m.content).replace(/\n/g, '<br>')}</div>`).join('');
+  sbBody.innerHTML = list.map(m => `<div class="msg ${m.role === 'user' ? 'me' : 'ai'}">${esc(m.content).replace(/\n/g, '<br>')}</div>`).join('');
   sbBody.scrollTop = sbBody.scrollHeight;
 }
+
+/* 点标签切会话（标签栏整块重绘，所以用事件委托） */
+$('sbTabs').onclick = e => {
+  const b = e.target.closest('.sb-tab');
+  if (b) switchChat(b.dataset.chat);
+};
+
+renderTabs();
 renderMsgs();
 
 const DEFAULT_URL = 'https://api.deepseek.com/v1/chat/completions';
@@ -1061,10 +1268,15 @@ async function send() {
   const c = cfg();
   if (!c.configured) { toast('请先在 ⚙ 设置里填 API Key'); openSettings(); return; }
 
-  history.push({ role: 'user', content: text });
+  /* 只带「当前标签」这个会话的历史：别的学科的内容一条都不进上下文 */
+  const chatKey = activeChat;
+  const list = ensureChat(chatKey);
+
+  list.push({ role: 'user', content: text });
   inp.value = '';
   renderMsgs();
-  LS.set('study_history', history);
+  renderTabs();        // 标签上的条数跟着变
+  saveChats();
 
   const btn = $('sbSend');
   btn.disabled = true;
@@ -1078,7 +1290,7 @@ async function send() {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.key },
       body: JSON.stringify({
         model: c.model,
-        messages: [{ role: 'system', content: c.prompt + TAG_RULE }, ...history.slice(-16)]
+        messages: [{ role: 'system', content: c.prompt + TAG_RULE }, ...list.slice(-16)]
       })
     });
     if (!res.ok) {
@@ -1097,10 +1309,13 @@ async function send() {
 
     // 自动沉淀：抽到知识标签就写进疑问库
     const saved = addQuestion({ content: text, answer: reply, tag });
+    // AI 打标签报出了一个没见过的学科 → 自动多一个学科标签（临时 + 知识树 + 动态发现）
+    const newTab = (tag && tag.knowledge === true) ? registerSubject(tag.subject) : '';
     let out = reply;
     if (saved) {
       renderVaultBadge();
-      toast('已记进疑问库 · ' + (saved.q.subject ? saved.q.subject + ' · ' : '') + saved.q.point);
+      toast('已记进疑问库 · ' + (saved.q.subject ? saved.q.subject + ' · ' : '') + saved.q.point
+        + (newTab ? `（新开了「${newTab}」的独立对话）` : ''));
       // 同一条问到第 3 次：换个讲法，而不是把同一句话再说一遍
       if (saved.repeat >= ASK_PIN) {
         out = reply + `\n\n这个点你已经问过 ${saved.repeat} 次了，要不要我换个讲法专门讲一遍？`;
@@ -1110,13 +1325,19 @@ async function send() {
       toast('这次没能识别出知识点，没有记录');
     }
 
-    history.push({ role: 'assistant', content: out });
-    LS.set('study_history', history);
-    renderMsgs();
+    // 回复落回「发出问题时那个会话」：中途切了标签也不会串到别的学科里
+    list.push({ role: 'assistant', content: out });
+    saveChats();
+    renderTabs();
+    if (activeChat === chatKey) renderMsgs();
   } catch (err) {
-    renderMsgs();
-    sbBody.innerHTML += `<div class="msg sys">请求失败：${esc(err.message)}</div>`;
-    sbBody.scrollTop = sbBody.scrollHeight;
+    if (activeChat === chatKey) {
+      renderMsgs();
+      sbBody.innerHTML += `<div class="msg sys">请求失败：${esc(err.message)}</div>`;
+      sbBody.scrollTop = sbBody.scrollHeight;
+    } else {
+      toast('请求失败：' + err.message);   // 已经切到别的学科了，别往人家屏幕上糊报错
+    }
   } finally {
     btn.disabled = false;
     btn.textContent = '发送';
@@ -1602,6 +1823,9 @@ function askFromNode(id) {
   if (!n) return;
   currentNodeId = id;
   selNodeId = id;
+  // 这个节点属于哪一科 → 自动切到对应学科标签（知识树是生物树，所以会切到「生物」）
+  const sk = subjectKeyOfNode(id);
+  if (sk && sk !== activeChat) switchChat(sk);
   renderSbContext();
   closeMap();
   openSidebar();
@@ -1726,14 +1950,19 @@ function renderSbContext() {
 }
 renderSbContext();
 
-/* ================= 演示参数（?demo=radial|sidebar|setting|pomo|vault） ================= */
+/* ================= 演示参数（?demo=radial|sidebar|chat|setting|pomo|vault|review|map） ================= */
 const demo = new URLSearchParams(location.search).get('demo');
 if (demo === 'radial')  setTimeout(openRadial, 400);
 if (demo === 'sidebar') setTimeout(() => openSidebar(), 400);
+if (demo === 'chat')    setTimeout(() => openSidebar(), 400);   // ?demo=chat = 打开侧栏（等价 sidebar，语义更直观）
 if (demo === 'setting') setTimeout(openSettings, 400);
 if (demo === 'pomo')    setTimeout(openPomo, 400);
 if (demo === 'vault')   setTimeout(openVault, 400);
 if (demo === 'review')  setTimeout(() => { startReview(); }, 400);
+/* &chat=<学科key> 打开时直接选中某个学科标签（截图 / 录片演示用），例：
+   ?demo=sidebar&chat=bio 或 ?demo=chat&chat=math */
+const demoChat = new URLSearchParams(location.search).get('chat');
+if (demoChat) setTimeout(() => switchChat(demoChat), 420);
 /* ?demo=map 直接打开知识地图：
    默认展开到「章」这一层并选中第 1 章；加 &expand=all 全部展开，
    加 &sel=<节点id> 选中指定节点（录视频 / 截图时很好用）。 */
