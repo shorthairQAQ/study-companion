@@ -1,0 +1,188 @@
+{
+  "note": "音频素材来自开源项目 Moodist（remvze/moodist，代码 MIT）。音频为第三方素材，授权为 Pixabay Content License 或 CC0，详见 app/README.md 的「素材来源」一节。",
+  "source_repo": "https://github.com/remvze/moodist",
+  "count": 20,
+  "total_bytes": 38826267,
+  "sounds": [
+    {
+      "id": "light-rain",
+      "label": "小雨",
+      "ic": "🌧️",
+      "category": "rain",
+      "file": "light-rain.mp3",
+      "bytes": 3775087,
+      "origin": "public/sounds/rain/light-rain.mp3"
+    },
+    {
+      "id": "heavy-rain",
+      "label": "大雨",
+      "ic": "⛈️",
+      "category": "rain",
+      "file": "heavy-rain.mp3",
+      "bytes": 541741,
+      "origin": "public/sounds/rain/heavy-rain.mp3"
+    },
+    {
+      "id": "thunder",
+      "label": "雷声",
+      "ic": "🌩️",
+      "category": "rain",
+      "file": "thunder.mp3",
+      "bytes": 2193449,
+      "origin": "public/sounds/rain/thunder.mp3"
+    },
+    {
+      "id": "rain-on-window",
+      "label": "雨打窗",
+      "ic": "🪟",
+      "category": "rain",
+      "file": "rain-on-window.mp3",
+      "bytes": 838145,
+      "origin": "public/sounds/rain/rain-on-window.mp3"
+    },
+    {
+      "id": "campfire",
+      "label": "篝火",
+      "ic": "🔥",
+      "category": "nature",
+      "file": "campfire.mp3",
+      "bytes": 3245619,
+      "origin": "public/sounds/nature/campfire.mp3"
+    },
+    {
+      "id": "waves",
+      "label": "海浪",
+      "ic": "🌊",
+      "category": "nature",
+      "file": "waves.mp3",
+      "bytes": 2347690,
+      "origin": "public/sounds/nature/waves.mp3"
+    },
+    {
+      "id": "wind",
+      "label": "风",
+      "ic": "🍃",
+      "category": "nature",
+      "file": "wind.mp3",
+      "bytes": 1606823,
+      "origin": "public/sounds/nature/wind.mp3"
+    },
+    {
+      "id": "river",
+      "label": "河流",
+      "ic": "💧",
+      "category": "nature",
+      "file": "river.mp3",
+      "bytes": 3895214,
+      "origin": "public/sounds/nature/river.mp3"
+    },
+    {
+      "id": "wind-in-trees",
+      "label": "林间风",
+      "ic": "🌲",
+      "category": "nature",
+      "file": "wind-in-trees.mp3",
+      "bytes": 1294948,
+      "origin": "public/sounds/nature/wind-in-trees.mp3"
+    },
+    {
+      "id": "birds",
+      "label": "鸟鸣",
+      "ic": "🐦",
+      "category": "animals",
+      "file": "birds.mp3",
+      "bytes": 2059536,
+      "origin": "public/sounds/animals/birds.mp3"
+    },
+    {
+      "id": "crickets",
+      "label": "虫鸣",
+      "ic": "🦗",
+      "category": "animals",
+      "file": "crickets.mp3",
+      "bytes": 2841144,
+      "origin": "public/sounds/animals/crickets.mp3"
+    },
+    {
+      "id": "cafe",
+      "label": "咖啡馆",
+      "ic": "☕",
+      "category": "places",
+      "file": "cafe.mp3",
+      "bytes": 1776720,
+      "origin": "public/sounds/places/cafe.mp3"
+    },
+    {
+      "id": "library",
+      "label": "图书馆",
+      "ic": "📚",
+      "category": "places",
+      "file": "library.mp3",
+      "bytes": 3825455,
+      "origin": "public/sounds/places/library.mp3"
+    },
+    {
+      "id": "night-village",
+      "label": "夜晚村庄",
+      "ic": "🌙",
+      "category": "places",
+      "file": "night-village.mp3",
+      "bytes": 2282322,
+      "origin": "public/sounds/places/night-village.mp3"
+    },
+    {
+      "id": "keyboard",
+      "label": "键盘",
+      "ic": "⌨️",
+      "category": "things",
+      "file": "keyboard.mp3",
+      "bytes": 388702,
+      "origin": "public/sounds/things/keyboard.mp3"
+    },
+    {
+      "id": "clock",
+      "label": "钟摆",
+      "ic": "🕰️",
+      "category": "things",
+      "file": "clock.mp3",
+      "bytes": 90674,
+      "origin": "public/sounds/things/clock.mp3"
+    },
+    {
+      "id": "vinyl",
+      "label": "黑胶",
+      "ic": "📻",
+      "category": "things",
+      "file": "vinyl.mp3",
+      "bytes": 1556698,
+      "origin": "public/sounds/things/vinyl-effect.mp3"
+    },
+    {
+      "id": "brown-noise",
+      "label": "棕噪音",
+      "ic": "🎚️",
+      "category": "noise",
+      "file": "brown-noise.wav",
+      "bytes": 913096,
+      "origin": "public/sounds/noise/brown-noise.wav"
+    },
+    {
+      "id": "pink-noise",
+      "label": "粉噪音",
+      "ic": "🎛️",
+      "category": "noise",
+      "file": "pink-noise.wav",
+      "bytes": 1676972,
+      "origin": "public/sounds/noise/pink-noise.wav"
+    },
+    {
+      "id": "white-noise",
+      "label": "白噪音",
+      "ic": "⬜",
+      "category": "noise",
+      "file": "white-noise.wav",
+      "bytes": 1676232,
+      "origin": "public/sounds/noise/white-noise.wav"
+    }
+  ]
+}
